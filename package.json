@@ -1,0 +1,67 @@
+{
+  "name": "ffc-sdk-client-javascript",
+  "version": "2.9.1",
+  "main": "./dist/ffc-sdk-client-javascript.umd.js",
+  "unpkg": "./dist/ffc-sdk-client-javascript.umd.js",
+  "module": "./dist/ffc-sdk-client-javascript.esm.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/ffc-sdk-client-javascript.esm.mjs",
+      "require": "./dist/ffc-sdk-client-javascript.umd.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup --config --bundleConfigAsCjs && npm run downlevel-dts",
+    "downlevel-dts": "downlevel-dts ./dist/ ./dist/ts4.2 --to=4.2",
+    "lint": "eslint src --fix",
+    "format": "prettier --write src examples/**/*.ts",
+    "format:check": "prettier --check src examples/**/*.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "description": "",
+  "devDependencies": {
+    "@babel/core": "7.26.0",
+    "@babel/preset-env": "7.26.0",
+    "@rollup/plugin-babel": "6.0.4",
+    "@rollup/plugin-commonjs": "28.0.2",
+    "@rollup/plugin-json": "6.1.0",
+    "@rollup/plugin-node-resolve": "16.0.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@types/events": "^3.0.3",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "copyfiles": "^2.4.1",
+    "downlevel-dts": "^0.11.0",
+    "dpdm": "^3.14.0",
+    "eslint": "8.57.1",
+    "eslint-config-airbnb-typescript": "18.0.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-ecmascript-compat": "^3.2.1",
+    "eslint-plugin-import": "2.31.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.4.2",
+    "rollup": "^4.34.9",
+    "rollup-plugin-delete": "^2.1.0",
+    "rollup-plugin-typescript2": "0.36.0",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "@livekit/mutex": "^1.1.1",
+    "@livekit/protocol": "^1.30.0",
+    "axios": "^1.8.1",
+    "events": "^3.3.0",
+    "livekit-client": "2.8.1",
+    "loglevel": "^1.9.2",
+    "typed-emitter": "^2.1.0"
+  }
+}
