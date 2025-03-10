@@ -1,9 +1,9 @@
 import { LocalTrack } from "livekit-client";
 import { FFCTrack } from "./ffc-track";
-import { type FFCReplaceTrackOptions } from "./ffc-track-types";
+import { type FFCTrackKind, type FFCReplaceTrackOptions, type FFCTrackDimensions } from "./ffc-track-types";
 
 export default abstract class FFCLocalTrack<
-  FFCTrackKind extends FFCTrack.Kind = FFCTrack.Kind
+  TrackKind extends FFCTrackKind = FFCTrackKind
 > extends FFCTrack<FFCTrackKind> {
   protected _track: LocalTrack;
 
@@ -25,7 +25,7 @@ export default abstract class FFCLocalTrack<
     return this._track.id;
   }
 
-  get dimensions(): FFCTrack.Dimensions | undefined {
+  get dimensions(): FFCTrackDimensions | undefined {
     return this._track.dimensions;
   }
 
@@ -45,7 +45,7 @@ export default abstract class FFCLocalTrack<
     return true;
   }
 
-  async waitForDimensions(timeoutMs: number = 5000): Promise<FFCTrack.Dimensions> {
+  async waitForDimensions(timeoutMs: number = 5000): Promise<FFCTrackDimensions> {
     return this._track.waitForDimensions(timeoutMs);
   }
 
@@ -59,12 +59,12 @@ export default abstract class FFCLocalTrack<
 
   abstract restartTrack(constraints?: unknown): Promise<void>;
 
-  async mute(): Promise<FFCLocalTrack<FFCTrackKind>> {
+  async mute(): Promise<FFCLocalTrack<TrackKind>> {
     this._track.mute();
     return this;
   }
 
-  async unmute(): Promise<FFCLocalTrack<FFCTrackKind>> {
+  async unmute(): Promise<FFCLocalTrack<TrackKind>> {
     this._track.unmute();
     return this;
   }

@@ -1,4 +1,4 @@
-import log from '../logger';
+import log from '../ffc-logger';
 import { isSafari } from './ffc-utils';
 
 const defaultId = 'default';

@@ -1,6 +1,7 @@
 import { EventMetric, MetricSample, MetricsBatch, ParticipantPermission, ParticipantTracks, ServerInfo, TimeSeriesMetric, TrackInfo, TrackSource, UpdateSubscription, UpdateTrackSettings, VideoQuality } from "@livekit/protocol";
 import { Track } from "livekit-client";
-import { FFCTrack, FFCVideoQuality, toFFCTrackSource } from "./track/ffc-track";
+import { FFCVideoQuality } from "./track/ffc-track";
+import { FFCTrackSource, toFFCTrackSource } from "./track/ffc-track-types";
 
 
 export interface FFCServerInfo extends Partial<ServerInfo> {}
@@ -70,7 +71,7 @@ export function toFFCUpdateSubscription(subscription: UpdateSubscription): FFCUp
 export interface FFCParticipantPermission {
   canSubscribe: boolean;
   canPublish: boolean;
-  canPublishSources: Array<FFCTrack.Source>;
+  canPublishSources: Array<FFCTrackSource>;
   hidden: boolean;
   canUpdateMetadata: boolean;
   canSubscribeMetrics: boolean;

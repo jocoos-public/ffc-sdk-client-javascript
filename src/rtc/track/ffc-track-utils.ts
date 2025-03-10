@@ -1,9 +1,8 @@
 import type { Track, TrackProcessor, AudioProcessorOptions, VideoProcessorOptions } from "livekit-client";
 import { cloneDeep, isSafari, sleep } from "../ffc-utils";
-import { FFCTrack } from "./ffc-track";
 import type { FFCAudioCaptureOptions, FFCCreateLocalTracksOptions, FFCScreenShareCaptureOptions, FFCVideoCaptureOptions, FFCVideoCodec } from "./ffc-track-options";
 import type { FFCTrackPublication } from "./ffc-track-publication";
-import type { FFCAudioTrack } from "./ffc-track-types";
+import { FFCTrackSource, type FFCAudioTrack } from "./ffc-track-types";
 import { FFCTrackPublishedResponse } from "../ffc-protocol";
 
 export function mergeDefaultOptions(
@@ -137,21 +136,21 @@ export function getNewAudioContext(): AudioContext | void {
  */
 export function kindToSource(kind: MediaDeviceKind) {
   if (kind === 'audioinput') {
-    return FFCTrack.Source.MICROPHONE;
+    return FFCTrackSource.MICROPHONE;
   } else if (kind === 'videoinput') {
-    return FFCTrack.Source.CAMERA;
+    return FFCTrackSource.CAMERA;
   } else {
-    return FFCTrack.Source.UNKNOWN;
+    return FFCTrackSource.UNKNOWN;
   }
 }
 
 /**
  * @internal
  */
-export function sourceToKind(source: FFCTrack.Source): MediaDeviceKind | undefined {
-  if (source === FFCTrack.Source.MICROPHONE) {
+export function sourceToKind(source: FFCTrackSource): MediaDeviceKind | undefined {
+  if (source === FFCTrackSource.MICROPHONE) {
     return 'audioinput';
-  } else if (source === FFCTrack.Source.CAMERA) {
+  } else if (source === FFCTrackSource.CAMERA) {
     return 'videoinput';
   } else {
     return undefined;
@@ -218,18 +217,9 @@ export function getTrackPublicationInfo<T extends FFCTrackPublication>(
   return infos;
 }
 
+/*
 export function getLogContextFromTrack(track: FFCTrack | FFCTrackPublication): Record<string, unknown> {
-  if (track instanceof FFCTrack) {
-    return {
-      trackID: track.sid,
-      source: track.source,
-      muted: track.isMuted,
-      enabled: track.mediaStreamTrack.enabled,
-      kind: track.kind,
-      streamID: track.mediaStreamID,
-      streamTrackID: track.mediaStreamTrack.id,
-    };
-  } else {
+  if (track instanceof FFCTrackPublication) {
     return {
       trackID: track.trackSid,
       enabled: track.isEnabled,
@@ -243,8 +233,20 @@ export function getLogContextFromTrack(track: FFCTrack | FFCTrackPublication): R
         ...(track.track ? getLogContextFromTrack(track.track) : {}),
       },
     };
+  } else {
+    return {
+      trackID: track.sid,
+      source: track.source,
+      muted: track.isMuted,
+      enabled: track.mediaStreamTrack.enabled,
+      kind: track.kind,
+      streamID: track.mediaStreamID,
+      streamTrackID: track.mediaStreamTrack.id,
+    };
+    
   }
 }
+*/
 
 export function supportsSynchronizationSources(): boolean {
   return typeof RTCRtpReceiver !== 'undefined' && 'getSynchronizationSources' in RTCRtpReceiver;

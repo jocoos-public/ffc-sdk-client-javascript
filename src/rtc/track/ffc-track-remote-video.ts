@@ -1,9 +1,9 @@
 import { type ElementInfo, RemoteVideoTrack } from "livekit-client";
 import FFCRemoteTrack from "./ffc-track-remote";
-import { FFCTrack } from "./ffc-track";
 import { type FFCVideoReceiverStats } from "../ffc-stats";
+import type { FFCTrackKind } from "./ffc-track-types";
 
-export default class FFCRemoteVideoTrack extends FFCRemoteTrack<FFCTrack.Kind.VIDEO> {
+export default class FFCRemoteVideoTrack extends FFCRemoteTrack<FFCTrackKind.VIDEO> {
   protected _track: RemoteVideoTrack;
   
   constructor(track: RemoteVideoTrack) {

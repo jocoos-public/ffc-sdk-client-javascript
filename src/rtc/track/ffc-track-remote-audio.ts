@@ -1,9 +1,9 @@
 import { RemoteAudioTrack } from "livekit-client";
-import { FFCTrack } from "./ffc-track";
 import { type FFCAudioReceiverStats } from "../ffc-stats";
 import FFCRemoteTrack from "./ffc-track-remote";
+import type { FFCTrackKind } from "./ffc-track-types";
 
-export default class FFCRemoteAudioTrack extends FFCRemoteTrack<FFCTrack.Kind.AUDIO> {
+export default class FFCRemoteAudioTrack extends FFCRemoteTrack<FFCTrackKind.AUDIO> {
   protected _track: RemoteAudioTrack;
 
   constructor(track: RemoteAudioTrack) {

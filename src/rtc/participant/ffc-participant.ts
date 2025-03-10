@@ -2,16 +2,15 @@ import { ConnectionQuality, LocalParticipant, Participant, RemoteParticipant } f
 
 import { EventEmitter } from "events";
 import type TypedEmitter from "typed-emitter";
-import { FFCTrack, toTrackSource } from "../track/ffc-track";
 import { FFCTrackPublication } from "../track/ffc-track-publication";
 import { FFCRemoteTrackPublication } from "../track/ffc-track-publication-remote";
 import FFCRemoteTrack from "../track/ffc-track-remote";
 import { FFCLocalTrackPublication } from "../track/ffc-track-publication-local";
 import { type FFCParticipantPermission, toFFCParticipantPermission } from "../ffc-protocol";
-import type { FFCLoggerOptions } from "../ffc-options";
 import { FFCParticipantKind, toParticipantKind, toFFCParticipantKind, FFCSubscriptionError } from "../ffc-protocol-enums";
-import FFCLocalParticipant from "./ffc-participant-local";
-import FFCRemoteParticipant from "./ffc-participant-remote";
+import { createFFCLocalParticipantWith, createFFCRemoteParticipantWith } from "../track/ffc-track-create";
+import type { FFCLoggerOptions } from "../../ffc-logger";
+import { toTrackSource, type FFCTrackSource, type FFCTrackStreamState } from "../track/ffc-track-types";
 
 export enum FFCConnectionQuality {
   EXCELLENT = 'EXCELLENT',
@@ -73,11 +72,11 @@ export default class FFCParticipant extends (EventEmitter as new () => TypedEmit
       return existing;
     }
     if (participant.isLocal) {
-      const localParticipant = new FFCLocalParticipant(participant as LocalParticipant);
+      const localParticipant = createFFCLocalParticipantWith(participant as LocalParticipant);
       this._participants.set(participant, localParticipant);
       return localParticipant;
     }
-    const remoteParticipant = new FFCRemoteParticipant(participant as RemoteParticipant);
+    const remoteParticipant = createFFCRemoteParticipantWith(participant as RemoteParticipant);
     this._participants.set(participant, remoteParticipant);
     return remoteParticipant;
   }
@@ -189,7 +188,7 @@ export default class FFCParticipant extends (EventEmitter as new () => TypedEmit
     return this._participant.getTrackPublications().map((trackPublication) => FFCTrackPublication.wrap(trackPublication));
   }
 
-  getTrackPublication(source: FFCTrack.Source): FFCTrackPublication | undefined {
+  getTrackPublication(source: FFCTrackSource): FFCTrackPublication | undefined {
     const trackPublication = this._participant.getTrackPublication(toTrackSource(source));
     if (trackPublication) {
       return FFCTrackPublication.wrap(trackPublication);
@@ -252,7 +251,7 @@ export type FFCParticipantEventCallbacks = {
   CONNECTION_QUALITY_CHANGED: /*connectionQualityChanged:*/ (connectionQuality: FFCConnectionQuality) => void;
   TRACK_STREAM_STATE_CHANGED: /*trackStreamStateChanged:*/ (
     publication: FFCRemoteTrackPublication,
-    streamState: FFCTrack.StreamState,
+    streamState: FFCTrackStreamState,
   ) => void;
   TRACK_SUBSCRIPTION_PERMISSION_CHANGED: /*trackSubscriptionPermissionChanged:*/ (
     publication: FFCRemoteTrackPublication,

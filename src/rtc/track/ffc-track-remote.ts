@@ -1,8 +1,9 @@
 import { RemoteTrack } from "livekit-client";
 import { FFCTrack } from "./ffc-track";
+import type { FFCTrackKind } from "./ffc-track-types";
 
 export default abstract class FFCRemoteTrack<
-  FFCTrackKind extends FFCTrack.Kind = FFCTrack.Kind
+  TrackKind extends FFCTrackKind = FFCTrackKind
 > extends FFCTrack<FFCTrackKind> {
   protected _track: RemoteTrack;
 

@@ -1,5 +1,5 @@
 import { VideoPreset, type AudioCaptureOptions, type AudioOutputOptions, type AudioPreset, type BackupVideoCodec, type CreateLocalTracksOptions, type ScalabilityMode, type ScreenShareCaptureOptions, type TrackPublishDefaults, type TrackPublishOptions, type VideoCaptureOptions, type VideoCodec, type VideoEncoding, type VideoPresetOptions, type VideoResolution } from "livekit-client";
-import { type FFCTrack, toFFCTrackSource, toTrackSource } from "./ffc-track";
+import { toFFCTrackSource, toTrackSource, type FFCTrackSource } from "./ffc-track-types";
 
 export interface FFCTrackPublishDefaults {
   /**
@@ -384,7 +384,7 @@ export function toAudioCaptureOptions(opts?: FFCAudioCaptureOptions): AudioCaptu
 export interface FFCAudioOutputOptions extends AudioOutputOptions {}
 export interface FFCTrackPublishOptions {
   name?: string;
-  source?: FFCTrack.Source;
+  source?: FFCTrackSource;
   stream?: string;
 }
 

@@ -1,11 +1,11 @@
 import { LocalAudioTrack } from "livekit-client";
-import type { FFCTrack } from "./ffc-track";
 import FFCLocalTrack from "./ffc-track-local";
 import { type FFCAudioSenderStats } from "../ffc-stats";
 import { type FFCAudioCaptureOptions } from "./ffc-track-options";
-import type { FFCLoggerOptions } from "../ffc-options";
+import type { FFCLoggerOptions } from "../../ffc-logger";
+import type { FFCTrackKind } from "./ffc-track-types";
 
-export default class FFCLocalAudioTrack extends FFCLocalTrack<FFCTrack.Kind.AUDIO> {
+export default class FFCLocalAudioTrack extends FFCLocalTrack<FFCTrackKind.AUDIO> {
   protected _track: LocalAudioTrack;
 
   constructor(track: LocalAudioTrack);

@@ -1,4 +1,4 @@
-import log from '../../logger';
+import log from '../../ffc-logger';
 
 import FFCLocalTrack from "./ffc-track-local";
 import { FFCVideoFacingMode, type FFCVideoCaptureOptions } from "./ffc-track-options";

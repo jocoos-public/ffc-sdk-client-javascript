@@ -3,13 +3,14 @@ import type TypedEventEmitter from "typed-emitter";
 import { EventEmitter } from "events";
 import type { FFCAudioTrackFeature } from "../ffc-protocol-enums";
 import { FFCError } from "../../ffc-errors";
-import { createLocalAudioTrackWith, createLocalVideoTrackWith, createRemoteAudioTrackWith, createRemoteVideoTrackWith } from "./ffc-track-create";
+import { createFFCLocalAudioTrackWith, createFFCLocalVideoTrackWith, createFFCRemoteAudioTrackWith, createFFCRemoteVideoTrackWith } from "./ffc-track-create";
 import type FFCLocalAudioTrack from "./ffc-track-local-audio";
 import type FFCLocalTrack from "./ffc-track-local";
 import type FFCLocalVideoTrack from "./ffc-track-local-video";
 import type FFCRemoteTrack from "./ffc-track-remote";
 import type FFCRemoteAudioTrack from "./ffc-track-remote-audio";
 import type FFCRemoteVideoTrack from "./ffc-track-remote-video";
+import { FFCTrackKind, FFCTrackSource, FFCTrackStreamState, toFFCTrackKind, toFFCTrackSource, toFFCTrackStreamState, toTrackSource, type FFCTrackSID } from "./ffc-track-types";
 
 export enum FFCVideoQuality {
   LOW = 'LOW',
@@ -55,7 +56,7 @@ export function toFFCVideoQuality(quality?: VideoQuality): FFCVideoQuality | und
 }
 
 export abstract class FFCTrack<
-  FFCTrackKind extends FFCTrack.Kind = FFCTrack.Kind
+  TrackKind extends FFCTrackKind = FFCTrackKind
 > extends (EventEmitter as new() => TypedEventEmitter<FFCTrackEventCallbacks>) {
 
   protected static _tracks: WeakMap<object, FFCTrack> = new WeakMap();
@@ -68,22 +69,22 @@ export abstract class FFCTrack<
     }
     if (track instanceof LocalTrack) {
       if (track.kind == Track.Kind.Audio) {
-        const localAudioTrack = createLocalAudioTrackWith(track as LocalAudioTrack);
+        const localAudioTrack = createFFCLocalAudioTrackWith(track as LocalAudioTrack);
         this._tracks.set(track, localAudioTrack);
         return localAudioTrack;
       } else if (track.kind == Track.Kind.Video) {
-        const localVideoTrack = createLocalVideoTrackWith(track as LocalVideoTrack);
+        const localVideoTrack = createFFCLocalVideoTrackWith(track as LocalVideoTrack);
         this._tracks.set(track, localVideoTrack);
         return localVideoTrack;
       }
       // TODO: What to do with other track kind
     }
     if (track.kind == Track.Kind.Audio) {
-      const remoteAudioTrack = createRemoteAudioTrackWith(track as RemoteAudioTrack);
+      const remoteAudioTrack = createFFCRemoteAudioTrackWith(track as RemoteAudioTrack);
       this._tracks.set(track, remoteAudioTrack);
       return remoteAudioTrack;
     } else if (track.kind == Track.Kind.Video) {
-      const remoteVideoTrack = createRemoteVideoTrackWith(track as RemoteVideoTrack);
+      const remoteVideoTrack = createFFCRemoteVideoTrackWith(track as RemoteVideoTrack);
       this._tracks.set(track, remoteVideoTrack);
       return remoteVideoTrack;
     }
@@ -119,8 +120,8 @@ export abstract class FFCTrack<
     return this._track.rtpTimestamp;
   }
 
-  get kind(): FFCTrackKind {
-    return toFFCTrackKind(this._track.kind) as FFCTrackKind;
+  get kind(): TrackKind {
+    return toFFCTrackKind(this._track.kind) as TrackKind;
   }
   
   get attachedElements(): HTMLMediaElement[] {
@@ -131,19 +132,19 @@ export abstract class FFCTrack<
     return this._track.isMuted;
   }
 
-  get source(): FFCTrack.Source {
+  get source(): FFCTrackSource {
     return toFFCTrackSource(this._track.source);
   }
 
-  set source(source: FFCTrack.Source) {
+  set source(source: FFCTrackSource) {
     this._track.source = toTrackSource(source);
   }
 
-  get sid(): FFCTrack.SID | undefined {
+  get sid(): FFCTrackSID | undefined {
     return this._track.sid;
   }
 
-  get streamState(): FFCTrack.StreamState {
+  get streamState(): FFCTrackStreamState {
     return toFFCTrackStreamState(this._track.streamState);
   }
 
@@ -186,126 +187,6 @@ export abstract class FFCTrack<
 }
 
 
-export namespace FFCTrack {
-  export enum Kind {
-    AUDIO = 'AUDIO',
-    VIDEO = 'VIDEO',
-    UNKNOWN = 'UNKNOWN',
-  }
-  
-  export type SID = string;
-
-  export enum Source {
-    CAMERA = 'CAMERA',
-    MICROPHONE = 'MICROPHONE',
-    SCREEN_SHARE = 'SCREEN_SHARE',
-    SCREEN_SHARE_AUDIO = 'SCREEN_SHARE_AUDIO',
-    UNKNOWN = 'UNKNOWN',
-  }
-
-  export enum StreamState {
-    ACTIVE = 'ACTIVE',
-    PAUSED = 'PAUSED',
-    UNKNOWN = 'UNKNOWN',
-  }
-
-  export interface Dimensions {
-    width: number;
-    height: number;
-  }
-}
-
-/* @internal */
-export function toFFCTrackKind(kind: Track.Kind): FFCTrack.Kind {
-  switch (kind) {
-    case Track.Kind.Audio:
-      return FFCTrack.Kind.AUDIO;
-    case Track.Kind.Video:
-      return FFCTrack.Kind.VIDEO;
-    case Track.Kind.Unknown:
-      return FFCTrack.Kind.UNKNOWN;
-  }
-}
-
-/* @internal */
-export function toTrackKind(kind: FFCTrack.Kind): Track.Kind {
-  switch (kind) {
-    case FFCTrack.Kind.AUDIO:
-      return Track.Kind.Audio;
-    case FFCTrack.Kind.VIDEO:
-      return Track.Kind.Video;
-    case FFCTrack.Kind.UNKNOWN:
-      return Track.Kind.Unknown;
-  }
-}
-
-/* @internal */
-export function toFFCTrackSource(): undefined;
-/* @internal */
-export function toFFCTrackSource(source: Track.Source): FFCTrack.Source;
-/* @internal */
-export function toFFCTrackSource(source?: Track.Source): FFCTrack.Source | undefined {
-  switch (source) {
-    case Track.Source.Camera:
-      return FFCTrack.Source.CAMERA;
-    case Track.Source.Microphone:
-      return FFCTrack.Source.MICROPHONE;
-    case Track.Source.ScreenShare:
-      return FFCTrack.Source.SCREEN_SHARE;
-    case Track.Source.ScreenShareAudio:
-      return FFCTrack.Source.SCREEN_SHARE_AUDIO;
-    case Track.Source.Unknown:
-      return FFCTrack.Source.UNKNOWN;
-  }
-}
-
-/* @internal */
-export function toTrackSource(): undefined;
-/* @internal */
-export function toTrackSource(source: FFCTrack.Source.MICROPHONE | FFCTrack.Source.SCREEN_SHARE_AUDIO): Track.Source.Microphone | Track.Source.ScreenShareAudio;
-/* @internal */
-export function toTrackSource(source: FFCTrack.Source): Track.Source;
-/* @internal */
-export function toTrackSource(source?: FFCTrack.Source): Track.Source | undefined {
-  switch (source) {
-    case FFCTrack.Source.CAMERA:
-      return Track.Source.Camera;
-    case FFCTrack.Source.MICROPHONE:
-      return Track.Source.Microphone;
-    case FFCTrack.Source.SCREEN_SHARE:
-      return Track.Source.ScreenShare;
-    case FFCTrack.Source.SCREEN_SHARE_AUDIO:
-      return Track.Source.ScreenShareAudio;
-    case FFCTrack.Source.UNKNOWN:
-      return Track.Source.Unknown;
-  }
-}
-
-/* @internal */
-export function toFFCTrackStreamState(state: Track.StreamState): FFCTrack.StreamState;
-/* @internal */
-export function toFFCTrackStreamState(state?: Track.StreamState): FFCTrack.StreamState | undefined{
-  switch (state) {
-    case Track.StreamState.Active:
-      return FFCTrack.StreamState.ACTIVE;
-    case Track.StreamState.Paused:
-      return FFCTrack.StreamState.PAUSED;
-    case Track.StreamState.Unknown:
-      return FFCTrack.StreamState.UNKNOWN;
-  }
-}
-
-/* @internal */
-export function toTrackStreamState(state: FFCTrack.StreamState): Track.StreamState {
-  switch (state) {
-    case FFCTrack.StreamState.ACTIVE:
-      return Track.StreamState.Active;
-    case FFCTrack.StreamState.PAUSED:
-      return Track.StreamState.Paused;
-    case FFCTrack.StreamState.UNKNOWN:
-      return Track.StreamState.Unknown;
-  }
-}
 
 export type FFCTrackEventCallbacks = {
   MESSAGE: /*message:*/ () => void;
@@ -334,13 +215,13 @@ export type FFCTrackEventCallbacks = {
 export function isAudioTrack(
   track: FFCTrack | undefined,
 ): track is FFCLocalAudioTrack | FFCRemoteAudioTrack {
-  return !!track && track.kind == FFCTrack.Kind.AUDIO;
+  return !!track && track.kind == FFCTrackKind.AUDIO;
 }
 
 export function isVideoTrack(
   track: FFCTrack | undefined,
 ): track is FFCLocalVideoTrack | FFCRemoteVideoTrack {
-  return !!track && track.kind == FFCTrack.Kind.VIDEO;
+  return !!track && track.kind == FFCTrackKind.VIDEO;
 }
 
 export function isLocalTrack(track: FFCTrack | MediaStreamTrack | undefined): track is FFCLocalTrack {

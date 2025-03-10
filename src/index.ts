@@ -17,12 +17,13 @@ import { FFCRemoteTrackPublication } from './rtc/track/ffc-track-publication-rem
 import FFCRemoteTrack from './rtc/track/ffc-track-remote';
 import FFCRemoteAudioTrack from './rtc/track/ffc-track-remote-audio';
 import FFCRemoteVideoTrack, { type FFCElementInfo } from './rtc/track/ffc-track-remote-video';
-import { createAudioAnalyser, isAudioTrack, isLocalParticipant, isLocalTrack, isRemoteParticipant, isRemoteTrack, isVideoTrack, type FFCAudioAnalyserOptions } from './rtc/ffc-utils';
-import { getLogger, LoggerNames, LogLevel, setLogExtension, setLogLevel } from './logger';
+import { createAudioAnalyser, isLocalParticipant, isRemoteParticipant, type FFCAudioAnalyserOptions } from './rtc/ffc-utils';
+import { getLogger, LoggerNames, LogLevel, setLogExtension, setLogLevel } from './ffc-logger';
 import { FFCRtcVideoRoomEvent } from './rtc/ffc-events';
 import type FFCDefaultReconnectPolicy from './rtc/ffc-reconnect-policy';
 import type FFCCriticalTimers from './rtc/ffc-timers';
 import { FFCDisconnectReason, FFCParticipantKind, FFCSubscriptionError } from './rtc/ffc-protocol-enums';
+import { isAudioTrack, isLocalTrack, isRemoteTrack, isVideoTrack } from './rtc/track/ffc-track';
 
 export * from "./ffc";
 export * from './rtc/ffc-events';

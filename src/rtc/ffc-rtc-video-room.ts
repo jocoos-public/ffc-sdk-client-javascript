@@ -11,10 +11,10 @@ import FFCRemoteTrack from './track/ffc-track-remote';
 import FFCLocalParticipant from './participant/ffc-participant-local';
 import { FFCTrackPublication, toFFCTrackPublicationPermissionStatus, toFFCTrackPublicationSubscriptionStatus } from './track/ffc-track-publication';
 import { FFCLocalTrackPublication } from './track/ffc-track-publication-local';
-import { FFCTrack, toFFCTrackStreamState } from './track/ffc-track';
+import { FFCTrack } from './track/ffc-track';
 import type { MetricsBatch, ParticipantPermission } from '@livekit/protocol';
 import { FFCDisconnectReason, toFFCDisconnectReason, toFFCSubscriptionError } from './ffc-protocol-enums';
-import type RTCEngine from 'livekit-client/dist/src/room/RTCEngine';
+import { toFFCTrackStreamState, type FFCTrackStreamState } from './track/ffc-track-types';
 
 export enum FFCConnectionState {
   DISCONNECTED = 'DISCONNECTED',
@@ -446,9 +446,9 @@ export class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEmitter<FFC
     return FFCParticipant.wrap(this._room.localParticipant) as FFCLocalParticipant;
   }
 
-  get engine(): RTCEngine {
-    return this._room.engine;
-  }
+  // get engine(): RTCEngine {
+  //   return this._room.engine;
+  // }
 
   get isE2EEEnabled(): boolean {
     return false;
@@ -629,7 +629,7 @@ export type FFCRtcVideoRoomEventCallbacks = {
   ) => void;
   */
   CONNECTION_QUALITY_CHANGED: /*connectionQualityChanged:*/ (quality: FFCConnectionQuality, participant: FFCParticipant) => void;
-  TRACK_STREAM_STATE_CHANGED: /*trackStreamStateChanged:*/ (publication: FFCRemoteTrackPublication, streamState: FFCTrack.StreamState, participant: FFCRemoteParticipant) => void;
+  TRACK_STREAM_STATE_CHANGED: /*trackStreamStateChanged:*/ (publication: FFCRemoteTrackPublication, streamState: FFCTrackStreamState, participant: FFCRemoteParticipant) => void;
   TRACK_SUBSCRIPTION_PERMISSION_CHANGED: /*trackSubscriptionPermissionChanged:*/ (publication: FFCRemoteTrackPublication, status: FFCTrackPublication.PermissionStatus, participant: FFCRemoteParticipant) => void;
   TRACK_SUBSCRIPTION_STATUS_CHANGED: /*trackSubscriptionStatusChanged:*/ (publication: FFCRemoteTrackPublication, status: FFCTrackPublication.SubscriptionStatus, participant: FFCRemoteParticipant) => void;
   AUDIO_PLAYBACK_STATUS_CHANGED: /*audioPlaybackChanged:*/ (playing: boolean) => void;

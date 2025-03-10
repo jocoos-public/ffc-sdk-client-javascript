@@ -3,9 +3,6 @@ import type { AudioOutputOptions, RoomOptions, WebAudioSettings } from "livekit-
 import type { FFCAdaptiveStreamSettings } from "./track/ffc-track-types";
 import { type FFCAudioCaptureOptions, type FFCVideoCaptureOptions, type FFCTrackPublishDefaults, type FFCAudioOutputOptions, toVideoCaptureOptions, toAudioCaptureOptions, toTrackPublishDefaults } from "./track/ffc-track-options";
 import type { FFCReconnectPolicy } from "./ffc-reconnect-policy";
-import type { LoggerOptions } from "livekit-client/dist/src/room/types";
-
-export type FFCLoggerOptions = LoggerOptions;
 
 export interface FFCWebAudioSettings extends WebAudioSettings {};
 

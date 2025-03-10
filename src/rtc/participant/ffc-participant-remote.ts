@@ -1,8 +1,8 @@
 import { RemoteParticipant } from "livekit-client";
 import FFCParticipant from "./ffc-participant";
 import { FFCRemoteTrackPublication } from "../track/ffc-track-publication-remote";
-import { FFCTrack, toTrackSource } from "../track/ffc-track";
 import { FFCTrackPublication } from "../track/ffc-track-publication";
+import { FFCTrackSource, toTrackSource } from "../track/ffc-track-types";
 
 
 export default class FFCRemoteParticipant extends FFCParticipant {
@@ -44,7 +44,7 @@ export default class FFCRemoteParticipant extends FFCParticipant {
   }
   */
 
-  getTrackPublication(source: FFCTrack.Source): FFCRemoteTrackPublication | undefined {
+  getTrackPublication(source: FFCTrackSource): FFCRemoteTrackPublication | undefined {
     const trackPublication = this._participant.getTrackPublication(toTrackSource(source));
     if (trackPublication) {
       return FFCTrackPublication.wrap(trackPublication) as FFCRemoteTrackPublication;
@@ -58,11 +58,11 @@ export default class FFCRemoteParticipant extends FFCParticipant {
     }
   }
 
-  setVolume(volume: number, source: FFCTrack.Source.MICROPHONE | FFCTrack.Source.SCREEN_SHARE_AUDIO = FFCTrack.Source.MICROPHONE): void {
+  setVolume(volume: number, source: FFCTrackSource.MICROPHONE | FFCTrackSource.SCREEN_SHARE_AUDIO = FFCTrackSource.MICROPHONE): void {
     this._participant.setVolume(volume, toTrackSource(source));
   }
 
-  getVolume(source: FFCTrack.Source.MICROPHONE | FFCTrack.Source.SCREEN_SHARE_AUDIO = FFCTrack.Source.MICROPHONE): number | undefined {
+  getVolume(source: FFCTrackSource.MICROPHONE | FFCTrackSource.SCREEN_SHARE_AUDIO = FFCTrackSource.MICROPHONE): number | undefined {
     return this._participant.getVolume(toTrackSource(source));
   }
 }

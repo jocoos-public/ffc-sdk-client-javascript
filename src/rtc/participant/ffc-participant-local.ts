@@ -1,11 +1,12 @@
 import { LocalParticipant, LocalTrack, LocalTrackPublication } from "livekit-client";
 import { FFCLocalTrackPublication } from "../track/ffc-track-publication-local";
 import FFCParticipant from "./ffc-participant";
-import { FFCTrack, toTrackSource } from "../track/ffc-track";
 import { FFCTrackPublication } from "../track/ffc-track-publication";
 import { type FFCCreateLocalTracksOptions, type FFCScreenShareCaptureOptions, type FFCTrackPublishOptions, type FFCVideoCaptureOptions, toCreateLocalTracksOptions, toTrackPublishOptions, toVideoCaptureOptions } from "../track/ffc-track-options";
 import FFCLocalTrack from "../track/ffc-track-local";
 import type { FFCParticipantTrackPermission } from "./ffc-participant-track-permission";
+import { toTrackSource, type FFCTrackSource } from "../track/ffc-track-types";
+import { FFCTrack } from "../track/ffc-track";
 
 export default class FFCLocalParticipant extends FFCParticipant {
   protected _participant: LocalParticipant;
@@ -47,7 +48,7 @@ export default class FFCLocalParticipant extends FFCParticipant {
     return this._participant.lastMicrophoneError;
   }
 
-  getTrackPublication(source: FFCTrack.Source): FFCLocalTrackPublication | undefined {
+  getTrackPublication(source: FFCTrackSource): FFCLocalTrackPublication | undefined {
     const trackPublication = this._participant.getTrackPublication(toTrackSource(source));
     if (trackPublication) {
       return FFCTrackPublication.wrap(trackPublication) as FFCLocalTrackPublication;

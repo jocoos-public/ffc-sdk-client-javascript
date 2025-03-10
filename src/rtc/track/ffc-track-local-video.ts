@@ -1,10 +1,11 @@
 import { LocalVideoTrack, type VideoCodec } from "livekit-client";
-import { FFCTrack, FFCVideoQuality, toVideoQuality } from "./ffc-track";
+import { FFCVideoQuality, toVideoQuality } from "./ffc-track";
 import FFCLocalTrack from "./ffc-track-local";
 import { type FFCVideoCaptureOptions, FFCVideoCodec, toFFCVideoCodec, toVideoCaptureOptions, toVideoCodec } from "./ffc-track-options";
 
 import { type FFCVideoSenderStats } from "../ffc-stats";
-import type { FFCLoggerOptions } from "../ffc-options";
+import type { FFCLoggerOptions } from "../../ffc-logger";
+import type { FFCTrackKind } from "./ffc-track-types";
 
 export interface SimulcastTrackInfo {
   codec: VideoCodec;
@@ -38,7 +39,7 @@ export function toFFCSimulcastTrackInfo(info?: SimulcastTrackInfo): FFCSimulcast
   };
 }
 
-export default class FFCLocalVideoTrack extends FFCLocalTrack<FFCTrack.Kind.VIDEO> {
+export default class FFCLocalVideoTrack extends FFCLocalTrack<FFCTrackKind.VIDEO> {
   protected _track: LocalVideoTrack;
 
   constructor(track: LocalVideoTrack);

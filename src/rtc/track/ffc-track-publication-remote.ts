@@ -1,18 +1,19 @@
 import { RemoteTrackPublication } from "livekit-client";
 import { FFCTrackPublication, toFFCTrackPublicationPermissionStatus, toFFCTrackPublicationSubscriptionStatus } from "./ffc-track-publication";
 import FFCRemoteTrack from "./ffc-track-remote";
-import { FFCTrack, FFCVideoQuality, toFFCVideoQuality, toTrackKind, toVideoQuality } from "./ffc-track";
-import type { FFCLoggerOptions } from "../ffc-options";
+import { FFCTrack, FFCVideoQuality, toFFCVideoQuality,toVideoQuality } from "./ffc-track";
 import type { FFCTrackInfo } from "../ffc-protocol";
 import type { TrackInfo } from "@livekit/protocol";
+import type { FFCLoggerOptions } from "../../ffc-logger";
+import { toTrackKind, type FFCTrackDimensions, type FFCTrackKind } from "./ffc-track-types";
 
 export class FFCRemoteTrackPublication extends FFCTrackPublication {
   protected _trackPublication: RemoteTrackPublication;
 
   /* @internal */
   constructor(publication: RemoteTrackPublication);
-  constructor(kind: FFCTrack.Kind, ti: FFCTrackInfo, autoSubscribe: boolean, loggerOptions?: FFCLoggerOptions);
-  constructor(kindOrPublication: FFCTrack.Kind | RemoteTrackPublication, ti?: FFCTrackInfo, autoSubscribe?: boolean, loggerOptions?: FFCLoggerOptions) {
+  constructor(kind: FFCTrackKind, ti: FFCTrackInfo, autoSubscribe: boolean, loggerOptions?: FFCLoggerOptions);
+  constructor(kindOrPublication: FFCTrackKind | RemoteTrackPublication, ti?: FFCTrackInfo, autoSubscribe?: boolean, loggerOptions?: FFCLoggerOptions) {
     let trackPublication: RemoteTrackPublication;
     if (kindOrPublication instanceof RemoteTrackPublication) {
       trackPublication = kindOrPublication;
@@ -72,7 +73,7 @@ export class FFCRemoteTrackPublication extends FFCTrackPublication {
     return this._trackPublication.setVideoQuality(toVideoQuality(quality));
   }
 
-  setVideoDimensions(dimensions: FFCTrack.Dimensions): void {
+  setVideoDimensions(dimensions: FFCTrackDimensions): void {
     return this._trackPublication.setVideoDimensions(dimensions);
   }
 

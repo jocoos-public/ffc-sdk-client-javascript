@@ -1,17 +1,17 @@
 import { EventEmitter } from "events";
 import type TypedEventEmitter from "typed-emitter";
 import { LocalAudioTrack, LocalTrackPublication, LocalVideoTrack, RemoteAudioTrack, RemoteTrackPublication, RemoteVideoTrack, TrackPublication } from "livekit-client";
-import { FFCTrack, toFFCTrackKind, toFFCTrackSource, toTrackKind } from "./ffc-track";
 import type FFCRemoteAudioTrack from "./ffc-track-remote-audio";
 import type FFCLocalVideoTrack from "./ffc-track-local-video";
 import type FFCRemoteVideoTrack from "./ffc-track-remote-video";
 import type FFCRemoteTrack from "./ffc-track-remote";
 import type FFCLocalAudioTrack from "./ffc-track-local-audio";
 import { type FFCTrackInfo, type FFCUpdateSubscription, type FFCUpdateTrackSettings } from "../ffc-protocol";
-import type { FFCLoggerOptions } from "../ffc-options";
 import type { FFCSubscriptionError } from "../ffc-protocol-enums";
-import { FFCLocalTrackPublication } from "./ffc-track-publication-local";
-import { FFCRemoteTrackPublication } from "./ffc-track-publication-remote";
+import { createFFCLocalTrackPublicationWith, createFFCRemoteTrackPublicationWith } from "./ffc-track-create";
+import type { FFCLoggerOptions } from "../../ffc-logger";
+import { FFCTrackSource, toFFCTrackKind, toFFCTrackSource, toTrackKind, type FFCTrackDimensions, type FFCTrackKind } from "./ffc-track-types";
+import { FFCTrack } from "./ffc-track";
 
 export class FFCTrackPublication extends (EventEmitter as new () => TypedEventEmitter<FFCPublicationEventCallbacks>) {
   protected static _trackPublications: WeakMap<object, FFCTrackPublication> = new WeakMap();
@@ -22,11 +22,11 @@ export class FFCTrackPublication extends (EventEmitter as new () => TypedEventEm
       return existing;
     }
     if (publication instanceof LocalTrackPublication) {
-      const localTrackPublication = new FFCLocalTrackPublication(publication as LocalTrackPublication);
+      const localTrackPublication = createFFCLocalTrackPublicationWith(publication as LocalTrackPublication);
       this._trackPublications.set(publication, localTrackPublication);
       return localTrackPublication;
     }
-    const remoteTrackPublication = new FFCRemoteTrackPublication(publication as RemoteTrackPublication);
+    const remoteTrackPublication = createFFCRemoteTrackPublicationWith(publication as RemoteTrackPublication);
     this._trackPublications.set(publication, remoteTrackPublication);
     return remoteTrackPublication;
   }
@@ -35,8 +35,8 @@ export class FFCTrackPublication extends (EventEmitter as new () => TypedEventEm
 
   /* @internal */
   constructor(publication: TrackPublication);
-  constructor(kind: FFCTrack.Kind, id: string, name: string, loggerOptions?: FFCLoggerOptions);
-  constructor(kindOrPublication: FFCTrack.Kind | TrackPublication, id?: string, name?: string, loggerOptions?: FFCLoggerOptions) {
+  constructor(kind: FFCTrackKind, id: string, name: string, loggerOptions?: FFCLoggerOptions);
+  constructor(kindOrPublication: FFCTrackKind | TrackPublication, id?: string, name?: string, loggerOptions?: FFCLoggerOptions) {
     let trackPublication: TrackPublication;
     if (kindOrPublication instanceof TrackPublication) {
       trackPublication = kindOrPublication;
@@ -47,7 +47,7 @@ export class FFCTrackPublication extends (EventEmitter as new () => TypedEventEm
     this._trackPublication = trackPublication;
   }
 
-  get kind(): FFCTrack.Kind {
+  get kind(): FFCTrackKind {
     return toFFCTrackKind(this._trackPublication.kind);
   }
 
@@ -76,7 +76,7 @@ export class FFCTrackPublication extends (EventEmitter as new () => TypedEventEm
     return this._trackPublication.trackInfo as FFCTrackInfo;
   }
 
-  get source(): FFCTrack.Source {
+  get source(): FFCTrackSource {
     return toFFCTrackSource(this._trackPublication.source);
   }
 
@@ -84,7 +84,7 @@ export class FFCTrackPublication extends (EventEmitter as new () => TypedEventEm
     return this._trackPublication.mimeType;
   }
 
-  get dimensions(): FFCTrack.Dimensions | undefined {
+  get dimensions(): FFCTrackDimensions | undefined {
     return this._trackPublication.dimensions;
   }
   

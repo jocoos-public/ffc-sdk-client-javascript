@@ -1,4 +1,7 @@
+import type { LoggerOptions } from 'livekit-client/dist/src/room/types';
 import * as log from 'loglevel';
+
+export type FFCLoggerOptions = LoggerOptions;
 
 export enum LogLevel {
   trace = 0,

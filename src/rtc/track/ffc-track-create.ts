@@ -1,10 +1,8 @@
-import type { LocalAudioTrack, LocalVideoTrack, RemoteAudioTrack, RemoteVideoTrack } from "livekit-client";
+import { LocalParticipant, LocalTrackPublication, RemoteParticipant, RemoteTrackPublication, type LocalAudioTrack, type LocalVideoTrack, type RemoteAudioTrack, type RemoteVideoTrack } from "livekit-client";
 import { audioDefaults, videoDefaults } from "../ffc-defaults";
 import FFCDeviceManager from "../ffc-device-manager";
 import { FFCRtcDeviceError, FFCRtcTrackError } from "../ffc-rtc-errors";
 import { isSafari17 } from "../ffc-utils";
-import { mediaTrackToLocalTrack } from "../participant/ffc-participant-utils";
-import { FFCTrack } from "./ffc-track";
 import type FFCLocalTrack from "./ffc-track-local";
 import FFCLocalAudioTrack from "./ffc-track-local-audio";
 import FFCLocalVideoTrack from "./ffc-track-local-video";
@@ -12,6 +10,12 @@ import { FFCScreenSharePresets, type FFCAudioCaptureOptions, type FFCCreateLocal
 import { constraintsForOptions, mergeDefaultOptions, screenCaptureToDisplayMediaStreamOptions } from "./ffc-track-utils";
 import FFCRemoteAudioTrack from "./ffc-track-remote-audio";
 import FFCRemoteVideoTrack from "./ffc-track-remote-video";
+import { FFCLocalTrackPublication } from "./ffc-track-publication-local";
+import { FFCRemoteTrackPublication } from "./ffc-track-publication-remote";
+import FFCLocalParticipant from "../participant/ffc-participant-local";
+import FFCRemoteParticipant from "../participant/ffc-participant-remote";
+import { FFCTrackKind, FFCTrackSource } from "./ffc-track-types";
+import type { FFCLoggerOptions } from "../../ffc-logger";
 
 /**
  * Creates a local video and audio track at the same time. When acquiring both
@@ -67,10 +71,10 @@ export async function createLocalTracks(
       }
 
       const track = mediaTrackToLocalTrack(mediaStreamTrack, trackConstraints);
-      if (track.kind === FFCTrack.Kind.VIDEO) {
-        track.source = FFCTrack.Source.CAMERA;
-      } else if (track.kind === FFCTrack.Kind.AUDIO) {
-        track.source = FFCTrack.Source.MICROPHONE;
+      if (track.kind === FFCTrackKind.VIDEO) {
+        track.source = FFCTrackSource.CAMERA;
+      } else if (track.kind === FFCTrackKind.AUDIO) {
+        track.source = FFCTrackSource.MICROPHONE;
       }
       track.mediaStream = stream;
       /*
@@ -137,32 +141,68 @@ export async function createLocalScreenTracks(
     throw new FFCRtcTrackError('no video track found');
   }
   const screenVideo = new FFCLocalVideoTrack(tracks[0], undefined, false);
-  screenVideo.source = FFCTrack.Source.SCREEN_SHARE;
+  screenVideo.source = FFCTrackSource.SCREEN_SHARE;
   const localTracks: Array<FFCLocalTrack> = [screenVideo];
   if (stream.getAudioTracks().length > 0) {
     const screenAudio = new FFCLocalAudioTrack(stream.getAudioTracks()[0], undefined, false);
-    screenAudio.source = FFCTrack.Source.SCREEN_SHARE_AUDIO;
+    screenAudio.source = FFCTrackSource.SCREEN_SHARE_AUDIO;
     localTracks.push(screenAudio);
   }
   return localTracks;
 }
 
+/** @internal */
+export function mediaTrackToLocalTrack(
+  mediaStreamTrack: MediaStreamTrack,
+  constraints?: MediaTrackConstraints,
+  loggerOptions?: FFCLoggerOptions,
+): FFCLocalVideoTrack | FFCLocalAudioTrack {
+  switch (mediaStreamTrack.kind) {
+    case 'audio':
+      return new FFCLocalAudioTrack(mediaStreamTrack, constraints, false, undefined, loggerOptions);
+    case 'video':
+      return new FFCLocalVideoTrack(mediaStreamTrack, constraints, false, loggerOptions);
+    default:
+      throw new FFCRtcTrackError(`unsupported track type: ${mediaStreamTrack.kind}`);
+  }
+}
+
 /* @internal */
-export function createLocalAudioTrackWith(track: LocalAudioTrack): FFCLocalAudioTrack {
+export function createFFCLocalAudioTrackWith(track: LocalAudioTrack): FFCLocalAudioTrack {
   return new FFCLocalAudioTrack(track);
 }
 
 /* @internal */
-export function createLocalVideoTrackWith(track: LocalVideoTrack): FFCLocalVideoTrack {
+export function createFFCLocalVideoTrackWith(track: LocalVideoTrack): FFCLocalVideoTrack {
   return new FFCLocalVideoTrack(track);
 }
 
 /* @internal */
-export function createRemoteAudioTrackWith(track: RemoteAudioTrack): FFCRemoteAudioTrack {
+export function createFFCRemoteAudioTrackWith(track: RemoteAudioTrack): FFCRemoteAudioTrack {
   return new FFCRemoteAudioTrack(track);
 }
 
 /* @internal */
-export function createRemoteVideoTrackWith(track: RemoteVideoTrack): FFCRemoteVideoTrack {
+export function createFFCRemoteVideoTrackWith(track: RemoteVideoTrack): FFCRemoteVideoTrack {
   return new FFCRemoteVideoTrack(track);
+}
+
+/* @internal */
+export function createFFCLocalTrackPublicationWith(publication: LocalTrackPublication): FFCLocalTrackPublication {
+  return new FFCLocalTrackPublication(publication);
+}
+
+/* @internal */
+export function createFFCRemoteTrackPublicationWith(publication: RemoteTrackPublication): FFCRemoteTrackPublication {
+  return new FFCRemoteTrackPublication(publication);
+}
+
+/* @internal */
+export function createFFCLocalParticipantWith(participant: LocalParticipant): FFCLocalParticipant {
+  return new FFCLocalParticipant(participant);
+}
+
+/* @internal */
+export function createFFCRemoteParticipantWith(participant: RemoteParticipant): FFCRemoteParticipant {
+  return new FFCRemoteParticipant(participant);
 }
