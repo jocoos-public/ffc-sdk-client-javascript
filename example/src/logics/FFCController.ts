@@ -28,9 +28,7 @@ import {
   FFCRtcVideoRoom,
   FFCRtcVideoRoomEvent,
   FFCTrack,
-  FFCTrackKind,
-  FFCTrackSource,
-} from 'ffc-client-sdk'
+} from 'ffc-sdk-client-javascript'
 import { EventHandler } from "./EventHandler";
 
 
@@ -133,7 +131,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       const publication = await this.local.participant.publishTrack(
         this.localAudioTrack,
         {
-          source: FFCTrackSource.MICROPHONE,
+          source: FFCTrack.Source.Microphone,
         }
       );
 
@@ -149,7 +147,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       const publication = await this.local.participant.publishTrack(
         this.localVideoTrack,
         {
-          source: FFCTrackSource.CAMERA,
+          source: FFCTrack.Source.Camera,
         }
       );
 
@@ -166,12 +164,12 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       FFCParticipantEvent.TRACK_SUBSCRIBED,
       (track, publication) => {
         if (track instanceof FFCRemoteAudioTrack) {
-          if (track.source === FFCTrackSource.MICROPHONE) {
+          if (track.source === FFCTrack.Source.Microphone) {
             remote.microphone!.track = track;
             this.context!.remotes[id].microphone.enabled = true;
           }
         } else if (track instanceof FFCRemoteVideoTrack) {
-          if (track.source === FFCTrackSource.CAMERA) {
+          if (track.source === FFCTrack.Source.Camera) {
             remote.camera!.track = track;
             this.context!.remotes[id].camera.enabled = true;
           }
@@ -183,12 +181,12 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       FFCParticipantEvent.TRACK_UNSUBSCRIBED,
       (track, publication) => {
         if (track instanceof FFCRemoteAudioTrack) {
-          if (track.source === FFCTrackSource.MICROPHONE) {
+          if (track.source === FFCTrack.Source.Microphone) {
             remote.microphone!.track = track;
             this.context!.remotes[id].microphone.enabled = false;
           }
         } else if (track instanceof FFCRemoteVideoTrack) {
-          if (track.source === FFCTrackSource.CAMERA) {
+          if (track.source === FFCTrack.Source.Camera) {
             remote.camera!.track = track;
             this.context!.remotes[id].camera.enabled = false;
           }
@@ -197,22 +195,22 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
     );
 
     remote.participant.on(FFCParticipantEvent.TRACK_MUTED, (track) => {
-      if (track.source === FFCTrackSource.MICROPHONE) {
+      if (track.source === FFCTrack.Source.Microphone) {
         this.context!.remotes[id].microphone.muted = true;
-      } else if (track.source === FFCTrackSource.CAMERA) {
+      } else if (track.source === FFCTrack.Source.Camera) {
         this.context!.remotes[id].camera.muted = true;
       }
     });
     remote.participant.on(FFCParticipantEvent.TRACK_UNMUTED, (track) => {
-      if (track.source === FFCTrackSource.MICROPHONE) {
+      if (track.source === FFCTrack.Source.Microphone) {
         this.context!.remotes[id].microphone.muted = false;
-      } else if (track.source === FFCTrackSource.CAMERA) {
+      } else if (track.source === FFCTrack.Source.Camera) {
         this.context!.remotes[id].camera.muted = false;
       }
     });
 
     remote.participant.on(FFCParticipantEvent.TRACK_PUBLISHED, (publication) => {
-      if (publication.kind === FFCTrackKind.VIDEO) {
+      if (publication.kind === FFCTrack.Kind.Video) {
         remote.camera = {
           publication: publication,
           track: publication.videoTrack as FFCRemoteVideoTrack,
@@ -221,7 +219,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
           enabled: false,
           muted: undefined,
         };
-      } else if (publication.kind === FFCTrackKind.AUDIO) {
+      } else if (publication.kind === FFCTrack.Kind.Audio) {
         remote.microphone = {
           publication: publication,
           track: publication.audioTrack as FFCRemoteAudioTrack,
@@ -234,13 +232,13 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       publication.setSubscribed(true);
     });
     remote.participant.on(FFCParticipantEvent.TRACK_UNPUBLISHED, (publication) => {
-      if (publication.kind === FFCTrackKind.VIDEO) {
+      if (publication.kind === FFCTrack.Kind.Video) {
         remote.camera = undefined;
         this.context!.remotes[id].camera = {
           enabled: undefined,
           muted: undefined,
         };
-      } else if (publication.kind === FFCTrackKind.AUDIO) {
+      } else if (publication.kind === FFCTrack.Kind.Audio) {
         remote.microphone = undefined;
         this.context!.remotes[id].microphone = {
           enabled: undefined,
@@ -255,7 +253,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
 
     remote.participant.trackPublications.forEach((publication) => {
       // 퍼블리셔가 있나없나!?ㅎ
-      if (publication.kind === FFCTrackKind.VIDEO) {
+      if (publication.kind === FFCTrack.Kind.Video) {
         remote.camera = {
           publication: publication as FFCRemoteTrackPublication,
           track: publication.videoTrack as FFCRemoteVideoTrack,
@@ -264,7 +262,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
           enabled: publication.isSubscribed,
           muted: publication.isMuted,
         };
-      } else if (publication.kind === FFCTrackKind.AUDIO) {
+      } else if (publication.kind === FFCTrack.Kind.Audio) {
         remote.microphone = {
           publication: publication as FFCRemoteTrackPublication,
           track: publication.audioTrack as FFCRemoteAudioTrack,
@@ -368,13 +366,13 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
         FFCParticipantEvent.LOCAL_TRACK_PUBLISHED,
         async (publication) => {
           if (this.local) {
-            if (publication.kind === FFCTrackKind.VIDEO) {
+            if (publication.kind === FFCTrack.Kind.Video) {
               this.local.camera = {
                 publication: publication,
                 track: publication.videoTrack as FFCLocalVideoTrack,
               };
               this.context!.local.camera.enabled = true;
-            } else if (publication.kind === FFCTrackKind.AUDIO) {
+            } else if (publication.kind === FFCTrack.Kind.Audio) {
               this.local.microphone = {
                 publication: publication,
                 track: publication.audioTrack as FFCLocalAudioTrack,
@@ -390,10 +388,10 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
         FFCParticipantEvent.LOCAL_TRACK_UNPUBLISHED,
         (publication) => {
           if (this.local) {
-            if (publication.kind === FFCTrackKind.VIDEO) {
+            if (publication.kind === FFCTrack.Kind.Video) {
               this.local.camera = undefined;
               this.context!.local.camera.enabled = false;
-            } else if (publication.kind === FFCTrackKind.AUDIO) {
+            } else if (publication.kind === FFCTrack.Kind.Audio) {
               this.local.microphone = undefined;
               this.context!.local.microphone.enabled = false;
             }
@@ -402,9 +400,9 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       );
 
       this.local.participant.on(FFCParticipantEvent.TRACK_MUTED, (track) => {
-        if (track.source === FFCTrackSource.CAMERA) {
+        if (track.source === FFCTrack.Source.Camera) {
           this.context!.local.camera.muted = true;
-        } else if (track.source === FFCTrackSource.MICROPHONE) {
+        } else if (track.source === FFCTrack.Source.Microphone) {
           this.context!.local.microphone.muted = true;
         }
 
@@ -412,9 +410,9 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       });
       this.local.participant.on(FFCParticipantEvent.TRACK_UNMUTED, (track) => {
         // this.context!.local.camera.muted = false;
-        if (track.source === FFCTrackSource.CAMERA) {
+        if (track.source === FFCTrack.Source.Camera) {
           this.context!.local.camera.muted = false;
-        } else if (track.source === FFCTrackSource.MICROPHONE) {
+        } else if (track.source === FFCTrack.Source.Microphone) {
           this.context!.local.microphone.muted = false;
         }
       });

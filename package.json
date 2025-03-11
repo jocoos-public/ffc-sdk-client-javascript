@@ -60,7 +60,7 @@
     "@livekit/protocol": "^1.30.0",
     "axios": "^1.8.1",
     "events": "^3.3.0",
-    "livekit-client": "2.8.1",
+    "livekit-client": "2.9.5",
     "loglevel": "^1.9.2",
     "typed-emitter": "^2.1.0"
   }

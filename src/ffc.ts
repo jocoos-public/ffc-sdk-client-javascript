@@ -2,9 +2,9 @@ import { FlipFlopCloudApi } from './api/ffc-api';
 import type { FFCMemberDto, FFCNestedAppDto, FFCNestedMemberDto, FFCPagesDto, FFCRtcVideoRoomTokenDto, FFCVideoRoomDto, FFCVideoRoomPolicyDto } from './api/types/data';
 import type { FFCCreateVideoRoomParams, FFCIssueRtcVideoRoomTokenParams, FFCUpdateVideoRoomParams } from './api/types/params';
 import type { FFCListVideoRoomsQuery } from './api/types/query';
-import { SdkNotInitializedError } from './ffc-errors';
+import { SdkNotInitializedError } from './errors';
 
-export class FlipFlopCloud {
+export default class FlipFlopCloud {
   private static instance: FlipFlopCloudApi;
   
   static init(baseUrl: string, accessToken: string, refreshToken?: string) {
