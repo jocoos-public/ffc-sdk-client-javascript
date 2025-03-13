@@ -1,9 +1,8 @@
-import { Track, type AdaptiveStreamSettings, type ElementInfo, type ReplaceTrackOptions } from "livekit-client";
+import { type AdaptiveStreamSettings, type ElementInfo, type ReplaceTrackOptions } from "livekit-client";
 import type FFCRemoteVideoTrack from "./track-remote-video";
 import type FFCRemoteAudioTrack from "./track-remote-audio";
 import type FFCLocalAudioTrack from "./track-local-audio";
 import type FFCLocalVideoTrack from "./track-local-video";
-import type { FFCTrackProcessor } from "./processor/types";
 import { VideoQuality } from "livekit-client";
 import { VideoQuality as VQ } from '@livekit/protocol';
 
@@ -49,30 +48,6 @@ export namespace FFCVideoQuality {
     }
   }
 }
-
-export type FFCTrackEventCallbacks = {
-  message: () => void;
-  muted: (track?: any) => void;
-  unmuted: (track?: any) => void;
-  restarted: (track?: any) => void;
-  ended: (track?: any) => void;
-  updateSettings: () => void;
-  updateSubscription: () => void;
-  audioPlaybackStarted: () => void;
-  audioPlaybackFailed: (error?: Error) => void;
-  audioSilenceDetected: () => void;
-  visibilityChanged: (visible: boolean, track?: any) => void;
-  videoDimensionsChanged: (dimensions: Track.Dimensions, track?: any) => void;
-  videoPlaybackStarted: () => void;
-  videoPlaybackFailed: (error?: Error) => void;
-  elementAttached: (element: HTMLMediaElement) => void;
-  elementDetached: (element: HTMLMediaElement) => void;
-  upstreamPaused: (track: any) => void;
-  upstreamResumed: (track: any) => void;
-  trackProcessorUpdate: (processor?: FFCTrackProcessor<Track.Kind>) => void;
-  //audioTrackFeatureUpdate: (track: any, feature: AudioTrackFeature, enabled: boolean) => void;
-  timeSyncUpdate: (update: { timestamp: number; rtpTimestamp: number }) => void;
-};
 
 export interface FFCElementInfo extends ElementInfo {}
 

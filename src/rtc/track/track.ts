@@ -2,8 +2,9 @@ import { Track } from "livekit-client";
 import type { IFFCTrack } from './interfaces';
 import { EventEmitter } from "events";
 import type TypedEventEmitter from 'typed-emitter';
-import type { FFCTrackEventCallbacks } from "./types";
 import { TrackSource } from "@livekit/protocol";
+import { wrapTrack } from "../wrapper-track";
+import { FFCTrackEvent } from "../events";
 
 
 export abstract class FFCTrack<TrackKind extends FFCTrack.Kind = FFCTrack.Kind>
@@ -15,6 +16,34 @@ export abstract class FFCTrack<TrackKind extends FFCTrack.Kind = FFCTrack.Kind>
   constructor(track: Track) {
     super();
     this._track = track;
+    this._track.on('message', (): void => {
+      this.emit(FFCTrackEvent.MESSAGE);
+      console.log('FFCTrack::', 'emitting', FFCTrackEvent.MESSAGE);
+    });
+    this._track.on('muted', (track?: any): void => {
+      const ffcTrack = track ? wrapTrack(track) : undefined;
+      this.emit('MUTED', ffcTrack);
+      console.log('FFCTrack::', 'emitting', FFCTrackEvent.MUTED, ffcTrack);
+    });
+    this._track.on('unmuted', (track?: any): void => {
+      const ffcTrack = track ? wrapTrack(track) : undefined;
+      this.emit(FFCTrackEvent.UNMUTED, ffcTrack);
+      console.log('FFCTrack::', 'emitting', FFCTrackEvent.UNMUTED, ffcTrack);
+    });
+    this._track.on('restarted', (track?: any): void => {
+      const ffcTrack = track ? wrapTrack(track) : undefined;
+      this.emit(FFCTrackEvent.RESTARTED, ffcTrack);
+      console.log('FFCTrack::', 'emitting', FFCTrackEvent.RESTARTED, ffcTrack);
+    });
+    this._track.on('ended', (track?: any): void => {
+      const ffcTrack = track ? wrapTrack(track) : undefined;
+      this.emit(FFCTrackEvent.ENDED, ffcTrack);
+      console.log('FFCTrack::', 'emitting', FFCTrackEvent.ENDED, ffcTrack);
+    });
+    this._track.on('timeSyncUpdate', (update: { timestamp: number; rtpTimestamp: number }): void => {
+      this.emit(FFCTrackEvent.TIME_SYNC_UPDATE, update);
+      console.log('FFCTrack::', 'emitting', FFCTrackEvent.TIME_SYNC_UPDATE, update);
+    });
   }
 
   /** @internal */
@@ -239,3 +268,12 @@ export namespace FFCTrack {
 
   export interface Dimensions extends Track.Dimensions {}
 }
+
+export type FFCTrackEventCallbacks = {
+  MESSAGE: () => void;
+  MUTED: (track?: any) => void;
+  UNMUTED: (track?: any) => void;
+  RESTARTED: (track?: any) => void;
+  ENDED: (track?: any) => void;
+  TIME_SYNC_UPDATE: (update: { timestamp: number; rtpTimestamp: number }) => void;
+};
