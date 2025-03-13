@@ -49,26 +49,66 @@ export namespace FFCRtcVideoRoomOptions {
 
   /** @internal */
   export function toRoomOptions(opts: FFCRtcVideoRoomOptions): RoomOptions {
-    return {
-      adaptiveStream: opts.adaptiveStream,
-      dynacast: opts.dynacast,
-      audioCaptureDefaults: opts.audioCaptureDefaults
-        ? FFCAudioCaptureOptions.toAudioCaptureOptions(opts.audioCaptureDefaults)
-        : undefined,
-      videoCaptureDefaults: opts.videoCaptureDefaults
-        ? FFCVideoCaptureOptions.toVideoCaptureOptions(opts.videoCaptureDefaults)
-        : undefined,
-      publishDefaults: opts.publishDefaults
-        ? FFCTrackPublishDefaults.toTrackPublishDefaults(opts.publishDefaults)
-        : undefined,
-      audioOutput: opts.audioOutput,
-      stopLocalTrackOnUnpublish: opts.stopLocalTrackOnUnpublish,
-      reconnectPolicy: opts.reconnectPolicy,
-      disconnectOnPageLeave: opts.disconnectOnPageLeave,
-      expSignalLatency: opts.expSignalLatency,
-      webAudioMix: opts.webAudioMix,
-      loggerName: opts.loggerName,
-    };
+    const options: RoomOptions = {};
+    if (opts.adaptiveStream !== undefined) {
+      options.adaptiveStream = opts.adaptiveStream;
+    }
+    if (opts.dynacast !== undefined) {
+      options.dynacast = opts.dynacast;
+    }
+    if (opts.audioCaptureDefaults !== undefined) {
+      options.audioCaptureDefaults = FFCAudioCaptureOptions.toAudioCaptureOptions(opts.audioCaptureDefaults);
+    }
+    if (opts.videoCaptureDefaults !== undefined) {
+      options.videoCaptureDefaults = FFCVideoCaptureOptions.toVideoCaptureOptions(opts.videoCaptureDefaults);
+    }
+    if (opts.publishDefaults !== undefined) {
+      options.publishDefaults = FFCTrackPublishDefaults.toTrackPublishDefaults(opts.publishDefaults);
+    }
+    if (opts.audioOutput !== undefined) {
+      options.audioOutput = opts.audioOutput;
+    }
+    if (opts.stopLocalTrackOnUnpublish !== undefined) {
+      options.stopLocalTrackOnUnpublish = opts.stopLocalTrackOnUnpublish;
+    }
+    if (opts.reconnectPolicy !== undefined) {
+      options.reconnectPolicy = opts.reconnectPolicy;
+    }
+    if (opts.disconnectOnPageLeave !== undefined) {
+      options.disconnectOnPageLeave = opts.disconnectOnPageLeave;
+    }
+    if (opts.expSignalLatency !== undefined) {
+      options.expSignalLatency = opts.expSignalLatency;
+    }
+    if (opts.webAudioMix !== undefined) {
+      options.webAudioMix = opts.webAudioMix;
+    }
+    if (opts.loggerName !== undefined) {
+      options.loggerName = opts.loggerName;
+    } else {
+      options.loggerName = 'FFC';
+    }
+    return options;
+    // {
+    //   adaptiveStream: opts.adaptiveStream,
+    //   dynacast: opts.dynacast,
+    //   audioCaptureDefaults: opts.audioCaptureDefaults
+    //     ? FFCAudioCaptureOptions.toAudioCaptureOptions(opts.audioCaptureDefaults)
+    //     : undefined,
+    //   videoCaptureDefaults: opts.videoCaptureDefaults
+    //     ? FFCVideoCaptureOptions.toVideoCaptureOptions(opts.videoCaptureDefaults)
+    //     : undefined,
+    //   publishDefaults: opts.publishDefaults
+    //     ? FFCTrackPublishDefaults.toTrackPublishDefaults(opts.publishDefaults)
+    //     : undefined,
+    //   audioOutput: opts.audioOutput,
+    //   stopLocalTrackOnUnpublish: opts.stopLocalTrackOnUnpublish,
+    //   reconnectPolicy: opts.reconnectPolicy,
+    //   disconnectOnPageLeave: opts.disconnectOnPageLeave,
+    //   expSignalLatency: opts.expSignalLatency,
+    //   webAudioMix: opts.webAudioMix,
+    //   loggerName: opts.loggerName,
+    // };
   }
 }
 

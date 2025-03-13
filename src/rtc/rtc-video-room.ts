@@ -357,9 +357,12 @@ export default class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEve
     if (opts instanceof Room) {
       this._room = opts;
     } else {
-      this._room = new Room(opts ? FFCRtcVideoRoomOptions.toRoomOptions(opts) : undefined);
+      console.log('options to set on room', opts);
+      this._room = opts
+        ? new Room(FFCRtcVideoRoomOptions.toRoomOptions(opts))
+        : new Room();
+        console.log('options set on room', this._room.options);
       wrapRtcVideoRoom(this._room, this);
-
     }
     this._room
       .on('connected', this._handleConnected)
