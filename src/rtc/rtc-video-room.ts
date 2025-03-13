@@ -18,6 +18,7 @@ import { FFCTrackPublication } from "./track/track-publication";
 import type FFCLocalTrackPublication from "./track/track-publication-local";
 import { FFCRtcVideoRoomOptions, type FFCInternalRtcVideoRoomOptions, type FFCRtcVideoRoomConnectOptions } from "./options";
 import { wrapRtcVideoRoom } from "./wrapper-rtc-video-room";
+import { FFCRtcVideoRoomEvent } from "./events";
 
 export enum FFCConnectionState {
   DISCONNECTED = 'DISCONNECTED',
@@ -65,290 +66,6 @@ export namespace FFCConnectionState {
 
 export default class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEventEmitter<FFCRtcVideoRoomEventCallbacks>) {
   private _room: Room;
-
-  private _handleConnected = () => {
-    this.emit('CONNECTED');
-  };
-
-  private _handleReconnecting = () => {
-    this.emit('RECONNECTING');
-  };
-
-  private _handleSignalReconnecting = () => {
-    this.emit('SIGNAL_RECONNECTING');
-  };
-
-  private _handleReconnected = () => {
-    this.emit('RECONNECTED');
-  };
-
-  private _handleDisconnected = (reason: DisconnectReason | undefined) => {
-    this.emit('DISCONNECTED', FFCDisconnectReason.fromDisconnectReason(reason));
-  };
-
-  private _handleConnectionStateChanged = (state: ConnectionState) => {
-    this.emit('CONNECTION_STATE_CHANGED', FFCConnectionState.fromConnectionState(state));
-  };
-
-  private _handleMediaDevicesChanged = () => {
-    this.emit('MEDIA_DEVICES_CHANGED');
-  };
-
-  private _handleParticipantConnected = (participant: Participant) => {
-    this.emit('PARTICIPANT_CONNECTED', wrapParticipant(participant) as FFCRemoteParticipant);
-  };
-
-  private _handleParticipantDisconnected = (participant: Participant) => {
-    this.emit('PARTICIPANT_DISCONNECTED', wrapParticipant(participant) as FFCRemoteParticipant);
-  };
-
-  private _handleTrackPublished = (publication: RemoteTrackPublication, participant: Participant) => {
-    this.emit(
-      'TRACK_PUBLISHED',
-      wrapTrackPublication(publication) as FFCRemoteTrackPublication,
-      wrapParticipant(participant) as FFCRemoteParticipant
-    );
-  };
-
-  private _handleTrackSubscribed = (
-    track: RemoteTrack,
-    publication: RemoteTrackPublication,
-    participant: RemoteParticipant,
-  ) => {
-    this.emit(
-      'TRACK_SUBSCRIBED',
-      wrapTrack(track) as FFCRemoteTrack,
-      wrapTrackPublication(publication) as FFCRemoteTrackPublication,
-      wrapParticipant(participant) as FFCRemoteParticipant,
-    );
-  }
-
-  private _handleTrackSubscriptionFailed = (
-    trackSid: string,
-    participant: RemoteParticipant,
-    reason?: SubscriptionError,
-  ) => {
-    this.emit(
-      'TRACK_SUBSCRIPTION_FAILED',
-      trackSid,
-      wrapParticipant(participant) as FFCRemoteParticipant,
-      reason ? FFCSubscriptionError.fromSubscriptionError(reason) : undefined,
-    );
-  }
-
-  private _handleTrackUnpublished = (publication: RemoteTrackPublication, participant: RemoteParticipant) => {
-    this.emit(
-      'TRACK_UNPUBLISHED',
-      wrapTrackPublication(publication) as FFCRemoteTrackPublication,
-      wrapParticipant(participant) as FFCRemoteParticipant
-    );
-  }
-
-  private _handleTrackUnsubscribed = (
-    track: RemoteTrack,
-    publication: RemoteTrackPublication,
-    participant: RemoteParticipant,
-  ) => {
-    this.emit(
-      'TRACK_UNSUBSCRIBED',
-      wrapTrack(track) as FFCRemoteTrack,
-      wrapTrackPublication(publication) as FFCRemoteTrackPublication,
-      wrapParticipant(participant) as FFCRemoteParticipant
-    );
-  }
-
-  private _handleTrackMuted = (publication: TrackPublication, participant: Participant) => {
-    this.emit(
-      'TRACK_MUTED',
-      wrapTrackPublication(publication),
-      wrapParticipant(participant)
-    );
-  }
-
-  private _handleTrackUnmuted = (publication: TrackPublication, participant: Participant) => {
-    this.emit(
-      'TRACK_UNMUTED',
-      wrapTrackPublication(publication),
-      wrapParticipant(participant)
-    );
-  }
-
-  private _handleLocalTrackPublished = (publication: LocalTrackPublication, participant: LocalParticipant) => {
-    this.emit(
-      'LOCAL_TRACK_PUBLISHED',
-      wrapTrackPublication(publication) as FFCLocalTrackPublication,
-      wrapParticipant(participant) as FFCLocalParticipant
-    );
-  }
-
-  private _handleLocalTrackUnpublished = (publication: LocalTrackPublication, participant: LocalParticipant) => {
-    this.emit(
-      'LOCAL_TRACK_UNPUBLISHED',
-      wrapTrackPublication(publication) as FFCLocalTrackPublication,
-      wrapParticipant(participant) as FFCLocalParticipant
-    );
-  }
-
-  private _handleLocalAudioSilenceDetected = (publication: LocalTrackPublication) => {
-    this.emit('LOCAL_AUDIO_SILENCE_DETECTED', publication);
-  }
-
-  private _handleParticipantMetadataChanged = (
-    metadata: string | undefined,
-    participant: RemoteParticipant | LocalParticipant,
-  ) => {
-    this.emit('PARTICIPANT_METADATA_CHANGED', metadata, wrapParticipant(participant) as FFCParticipant);
-  }
-
-  private _handleParticipantNameChanged = (name: string, participant: RemoteParticipant | LocalParticipant) => {
-    if (participant.isLocal) {
-      this.emit(
-        'PARTICIPANT_NAME_CHANGED',
-        name,
-        wrapParticipant(participant) as FFCLocalParticipant
-      );
-    } else {
-      this.emit(
-        'PARTICIPANT_NAME_CHANGED',
-        name,
-        wrapParticipant(participant) as FFCRemoteParticipant
-      );
-    }
-  }
-
-  private _handleParticipantPermissionsChanged = (
-    prevPermissions: ParticipantPermission | undefined,
-    participant: RemoteParticipant | LocalParticipant,
-  ) => {
-    if (participant.isLocal) {
-      this.emit(
-        'PARTICIPANT_PERMISSIONS_CHANGED',
-        prevPermissions ? FFCParticipantPermission.fromParticipantPermission(prevPermissions) : undefined,
-        wrapParticipant(participant) as FFCLocalParticipant,
-      );
-    } else {
-      this.emit(
-        'PARTICIPANT_PERMISSIONS_CHANGED',
-        prevPermissions ? FFCParticipantPermission.fromParticipantPermission(prevPermissions) : undefined,
-        wrapParticipant(participant) as FFCRemoteParticipant,
-      );
-    }
-  }
-
-  private _handleParticipantAttributesChanged = (
-    changedAttributes: Record<string, string>,
-    participant: RemoteParticipant | LocalParticipant,
-  ) => {
-    if (participant.isLocal) {
-      this.emit(
-        'PARTICIPANT_ATTRIBUTES_CHANGED',
-        changedAttributes,
-        wrapParticipant(participant) as FFCLocalParticipant
-      );
-    } else {
-      this.emit(
-        'PARTICIPANT_ATTRIBUTES_CHANGED',
-        changedAttributes,
-        wrapParticipant(participant) as FFCRemoteParticipant
-      );
-    }
-  }
-
-  private _handleActiveSpeakersChanged = (speakers: Array<Participant>) => {
-    this.emit(
-      'ACTIVE_SPEAKERS_CHANGED',
-      speakers.map((participant) => wrapParticipant(participant))
-    );
-  }
-
-  private _handleRoomMetadataChanged = (metadata: string) => {
-    this.emit('ROOM_METADATA_CHANGED', metadata);
-  }
-
-  private _handleConnectionQualityChanged = (quality: ConnectionQuality, participant: Participant) => {
-    this.emit(
-      'CONNECTION_QUALITY_CHANGED',
-      FFCConnectionQuality.fromConnectionQuality(quality),
-      wrapParticipant(participant)
-    );
-  }
-
-  private _handleMediaDevicesError = (error: Error) => {
-    this.emit('MEDIA_DEVICES_ERROR', error);
-  }
-
-  private _handleTrackStreamStateChanged = (
-    publication: RemoteTrackPublication,
-    streamState: Track.StreamState,
-    participant: RemoteParticipant,
-  ) => {
-    this.emit(
-      'TRACK_STREAM_STATE_CHANGED',
-      wrapTrackPublication(publication) as FFCRemoteTrackPublication,
-      FFCTrack.fromTrackStreamState(streamState),
-      wrapParticipant(participant) as FFCRemoteParticipant,
-    );
-  }
-
-  private _handleTrackSubscriptionPermissionChanged = (
-    publication: RemoteTrackPublication,
-    status: TrackPublication.PermissionStatus,
-    participant: RemoteParticipant,
-  ) => {
-    this.emit(
-      'TRACK_SUBSCRIPTION_PERMISSION_CHANGED',
-      wrapTrackPublication(publication) as FFCRemoteTrackPublication,
-      FFCTrackPublication.fromPermissionStatus(status),
-      wrapParticipant(participant) as FFCRemoteParticipant,
-    );
-  }
-
-  private _handleTrackSubscriptionStatusChanged = (
-    publication: RemoteTrackPublication,
-    status: TrackPublication.SubscriptionStatus,
-    participant: RemoteParticipant,
-  ) => {
-    this.emit(
-      'TRACK_SUBSCRIPTION_STATUS_CHANGED',
-      wrapTrackPublication(publication) as FFCRemoteTrackPublication,
-      FFCTrackPublication.fromSubscriptionStatus(status),
-      wrapParticipant(participant) as FFCRemoteParticipant,
-    );
-  }
-
-  private _handleAudioPlaybackChanged = (playing: boolean) => {
-    this.emit('AUDIO_PLAYBACK_STATUS_CHANGED', playing);
-  }
-
-  private _handleVideoPlaybackChanged = (playing: boolean) => {
-    this.emit('VIDEO_PLAYBACK_STATUS_CHANGED', playing);
-  }
-
-  private _handleSignalConnected = () => {
-    this.emit('SIGNAL_CONNECTED');
-  }
-
-  private _handleRecordingStatusChanged = (recording: boolean) => this.emit('RECORDING_STATUS_CHANGED', recording);
-
-  private _handleActiveDeviceChanged = (kind: MediaDeviceKind, deviceId: string) => {
-    this.emit('ACTIVE_DEVICE_CHANGED', kind, deviceId);
-  }
-
-  private _handleLocalTrackSubscribed = (publication: LocalTrackPublication, participant: LocalParticipant) => {
-    this.emit(
-      'LOCAL_TRACK_SUBSCRIBED',
-      wrapTrackPublication(publication) as FFCLocalTrackPublication,
-      wrapParticipant(participant) as FFCLocalParticipant
-    );
-  }
-
-  private _handleMetricsReceived = (metrics: MetricsBatch, participant?: Participant) => {
-    this.emit(
-      'METRICS_RECEIVED',
-      new FFCMetricsBatch(metrics),
-      participant ? wrapParticipant(participant) : undefined,
-    );
-  }
 
   //constructor(room: Room);
   constructor(opts?: FFCRtcVideoRoomOptions) {
@@ -402,46 +119,6 @@ export default class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEve
       .on('activeDeviceChanged', this._handleActiveDeviceChanged)
       .on('localTrackSubscribed', this._handleLocalTrackSubscribed)
       .on('metricsReceived', this._handleMetricsReceived);
-    /*
-      
-      .on('connected', () => this.emit('CONNECTED'))
-      .on('reconnecting', () => this.emit('RECONNECTING'))
-      .on('signalReconnecting', () => this.emit('SIGNAL_RECONNECTING'))
-      .on('reconnected', () => this.emit('RECONNECTED'))
-      .on('disconnected', (reason: FFCDisconnectReason | undefined) => this.emit('DISCONNECTED', reason))
-      .on('connectionStateChanged', (state: ConnectionState) => this.emit('CONNECTION_STATE_CHANGED', toFFCConnectionQuality(state)))
-      .on('mediaDevicesChanged', () => this.emit('MEDIA_DEVICES_CHANGED'))
-      .on('participantConnected', (participant) => this.emit('PARTICIPANT_CONNECTED', wrapParticipant(participant) as FFCRemoteParticipant))
-      .on('participantDisconnected', (participant) => this.emit('PARTICIPANT_DISCONNECTED', wrapParticipant(participant) as FFCRemoteParticipant))
-      .on('trackPublished', (publication, participant) => this.emit('TRACK_PUBLISHED', publication, wrapParticipant(participant) as FFCRemoteParticipant))
-      .on('trackSubscribed', (track, publication, participant) => this.emit('TRACK_SUBSCRIBED', track, publication, wrapParticipant(participant) as FFCRemoteParticipant))
-      .on('trackSubscriptionFailed', (trackSid, participant, reason) => this.emit('TRACK_SUBSCRIPTION_FAILED', trackSid, wrapParticipant(participant) as FFCRemoteParticipant, reason))
-      .on('trackUnpublished', (publication, participant) => this.emit('TRACK_UNPUBLISHED', publication, wrapParticipant(participant) as FFCRemoteParticipant))
-      .on('trackUnsubscribed', (track, publication, participant) => this.emit('TRACK_UNSUBSCRIBED', track, publication, wrapParticipant(participant) as FFCRemoteParticipant))
-      .on('trackMuted', (publication, participant) => this.emit('TRACK_MUTED', publication, wrapParticipant(participant) as FFCParticipant))
-      .on('trackUnmuted', (publication, participant) => this.emit('TRACK_UNMUTED', publication, wrapParticipant(participant) as FFCParticipant))
-      .on('localTrackPublished', (publication, participant) => this.emit('LOCAL_TRACK_PUBLISHED', publication, wrapParticipant(participant) as FFCLocalParticipant))
-      .on('localTrackUnpublished', (publication, participant) => this.emit('LOCAL_TRACK_UNPUBLISHED', publication, wrapParticipant(participant) as FFCLocalParticipant))
-      .on('localAudioSilenceDetected', (publication) => this.emit('LOCAL_AUDIO_SILENCE_DETECTED', publication))
-      .on('participantMetadataChanged', (metadata, participant) => this.emit('PARTICIPANT_METADATA_CHANGED', metadata, wrapParticipant(participant) as FFCParticipant))
-      .on('participantNameChanged', (name, participant) => this.emit('PARTICIPANT_NAME_CHANGED', name, wrapParticipant(participant) as FFCParticipant))
-      .on('participantPermissionChanged', (prevPermissions, participant) => this.emit('PARTICIPANT_PERMISSION_CHANGED', prevPermissions, wrapParticipant(participant) as FFCParticipant))
-      .on('participantAttributesChanged', (changedAttributes, participant) => this.emit('PARTICIPANT_ATTRIBUTES_CHANGED', changedAttributes, wrapParticipant(participant) as FFCParticipant))
-      .on('activeSpeakersChanged', (speakers) => this.emit('ACTIVE_SPEAKERS_CHANGED', speakers.map((participant) => wrapParticipant(participant))))
-      .on('roomMetadataChanged', (metadata) => this.emit('ROOM_METADATA_CHANGED', metadata))
-      .on('connectionQualityChanged', (quality, participant) => this.emit('CONNECTION_QUALITY_CHANGED', quality, wrapParticipant(participant)))
-      .on('mediaDevicesError', (error) => this.emit('MEDIA_DEVICES_ERROR', error))
-      .on('trackStreamStateChanged', (publication, streamState, participant) => this.emit('TRACK_STREAM_STATE_CHANGED', publication, streamState, wrapParticipant(participant)))
-      .on('trackSubscriptionPermissionChanged', (publication, status, participant) => this.emit('TRACK_SUBSCRIPTION_PERMISSION_CHANGED', publication, status, wrapParticipant(participant)))
-      .on('trackSubscriptionStatusChanged', (publication, status, participant) => this.emit('TRACK_SUBSCRIPTION_STATUS_CHANGED', publication, status, wrapParticipant(participant)))
-      .on('audioPlaybackChanged', (playing) => this.emit('AUDIO_PLAYBACK_CHANGED', playing))
-      .on('videoPlaybackChanged', (playing) => this.emit('VIDEO_PLAYBACK_CHANGED', playing))
-      .on('signalConnected', () => this.emit('SIGNAL_CONNECTED'))
-      .on('recordingStatusChanged', (recording) => this.emit('RECORDING_STATUS_CHANGED', recording))
-      .on('activeDeviceChanged', (kind, deviceId) => this.emit('ACTIVE_DEVICE_CHANGED', kind, deviceId))
-      .on('localTrackSubscribed', (publication, participant) => this.emit('LOCAL_TRACK_SUBSCRIBED', publication, wrapParticipant(participant) as FFCLocalParticipant))
-      .on('metricsReceived', (metrics, participant) => this.emit('METRICS_RECEIVED', metrics, wrapParticipant(participant))); 
-      */
   }
 
   /** @internal */
@@ -593,6 +270,330 @@ export default class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEve
     throw new Error('Method not implemented.');
   }
   */
+
+  private _handleConnected = () => {
+    this.emit(FFCRtcVideoRoomEvent.CONNECTED);
+    console.log('emitting', FFCRtcVideoRoomEvent.CONNECTED);
+  };
+
+  private _handleReconnecting = () => {
+    this.emit(FFCRtcVideoRoomEvent.RECONNECTING);
+    console.log('emitting', FFCRtcVideoRoomEvent.RECONNECTING);
+  };
+
+  private _handleSignalReconnecting = () => {
+    this.emit(FFCRtcVideoRoomEvent.SIGNAL_RECONNECTING);
+    console.log('emitting', FFCRtcVideoRoomEvent.SIGNAL_RECONNECTING);
+  };
+
+  private _handleReconnected = () => {
+    this.emit(FFCRtcVideoRoomEvent.RECONNECTED);
+    console.log('emitting', FFCRtcVideoRoomEvent.RECONNECTED);
+  };
+
+  private _handleDisconnected = (reason: DisconnectReason | undefined) => {
+    const ffcReason = reason ? FFCDisconnectReason.fromDisconnectReason(reason) : undefined;
+    this.emit(FFCRtcVideoRoomEvent.DISCONNECTED, ffcReason);
+    console.log('emitting', FFCRtcVideoRoomEvent.DISCONNECTED, ffcReason);
+  };
+
+  private _handleConnectionStateChanged = (state: ConnectionState) => {
+    const ffcState = FFCConnectionState.fromConnectionState(state);
+    this.emit(FFCRtcVideoRoomEvent.CONNECTION_STATE_CHANGED, ffcState);
+    console.log('emitting', FFCRtcVideoRoomEvent.CONNECTION_STATE_CHANGED, ffcState)
+  };
+
+  private _handleMediaDevicesChanged = () => {
+    this.emit(FFCRtcVideoRoomEvent.MEDIA_DEVICES_CHANGED);
+    console.log('emitting', FFCRtcVideoRoomEvent.MEDIA_DEVICES_CHANGED);
+  };
+
+  private _handleParticipantConnected = (participant: Participant) => {
+    const ffcParticipant = wrapParticipant(participant) as FFCRemoteParticipant;
+    this.emit('PARTICIPANT_CONNECTED', ffcParticipant);
+    console.log('emitting', 'PARTICIPANT_CONNECTED', ffcParticipant);
+  };
+
+  private _handleParticipantDisconnected = (participant: Participant) => {
+    const ffcParticipant = wrapParticipant(participant) as FFCRemoteParticipant;
+    this.emit('PARTICIPANT_DISCONNECTED', ffcParticipant);
+    console.log('emitting', 'PARTICIPANT_DISCONNECTED', ffcParticipant);
+  };
+
+  private _handleTrackPublished = (publication: RemoteTrackPublication, participant: Participant) => {
+    const ffcPublication = wrapTrackPublication(publication) as FFCRemoteTrackPublication;
+    const ffcParticipant = wrapParticipant(participant) as FFCRemoteParticipant;
+    this.emit('TRACK_PUBLISHED', ffcPublication, ffcParticipant);
+    console.log('emitting', 'TRACK_PUBLISHED', ffcPublication, ffcParticipant);
+  };
+
+  private _handleTrackSubscribed = (
+    track: RemoteTrack,
+    publication: RemoteTrackPublication,
+    participant: RemoteParticipant,
+  ) => {
+    const ffcTrack = wrapTrack(track) as FFCRemoteTrack;
+    const ffcPublication = wrapTrackPublication(publication) as FFCRemoteTrackPublication;
+    const ffcParticipant = wrapParticipant(participant) as FFCRemoteParticipant;
+    this.emit('TRACK_SUBSCRIBED', ffcTrack, ffcPublication, ffcParticipant);
+    console.log('emitting', 'TRACK_SUBSCRIBED', ffcTrack, ffcPublication, ffcParticipant);
+  }
+
+  private _handleTrackSubscriptionFailed = (
+    trackSid: string,
+    participant: RemoteParticipant,
+    reason?: SubscriptionError,
+  ) => {
+    const ffcParticipant = wrapParticipant(participant) as FFCRemoteParticipant;
+    const ffcReason = reason ? FFCSubscriptionError.fromSubscriptionError(reason) : undefined;
+    this.emit(
+      FFCRtcVideoRoomEvent.TRACK_SUBSCRIPTION_FAILED,
+      trackSid,
+      ffcParticipant,
+      ffcReason,
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.TRACK_SUBSCRIPTION_FAILED, trackSid, ffcParticipant, ffcReason);
+  }
+
+  private _handleTrackUnpublished = (publication: RemoteTrackPublication, participant: RemoteParticipant) => {
+    const ffcPublication = wrapTrackPublication(publication) as FFCRemoteTrackPublication;
+    const ffcParticipant = wrapParticipant(participant) as FFCRemoteParticipant;
+    this.emit(
+      FFCRtcVideoRoomEvent.TRACK_UNPUBLISHED,
+      ffcPublication,
+      ffcParticipant
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.TRACK_UNPUBLISHED, ffcPublication, ffcParticipant);
+  }
+
+  private _handleTrackUnsubscribed = (
+    track: RemoteTrack,
+    publication: RemoteTrackPublication,
+    participant: RemoteParticipant,
+  ) => {
+    const ffcTrack = wrapTrack(track) as FFCRemoteTrack;
+    const ffcPublication = wrapTrackPublication(publication) as FFCRemoteTrackPublication;
+    const ffcParticipant = wrapParticipant(participant) as FFCRemoteParticipant;
+    this.emit(
+      FFCRtcVideoRoomEvent.TRACK_UNSUBSCRIBED,
+      ffcTrack,
+      ffcPublication,
+      ffcParticipant,
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.TRACK_UNSUBSCRIBED, ffcTrack, ffcPublication, ffcParticipant);
+  }
+
+  private _handleTrackMuted = (publication: TrackPublication, participant: Participant) => {
+    const ffcPublication = wrapTrackPublication(publication) as FFCTrackPublication;
+    const ffcParticipant = wrapParticipant(participant);
+    this.emit(
+      FFCRtcVideoRoomEvent.TRACK_MUTED,
+      ffcPublication,
+      ffcParticipant,
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.TRACK_MUTED, ffcPublication, ffcParticipant);
+  }
+
+  private _handleTrackUnmuted = (publication: TrackPublication, participant: Participant) => {
+    const ffcPublication = wrapTrackPublication(publication);
+    const ffcParticipant = wrapParticipant(participant);
+    this.emit(
+      FFCRtcVideoRoomEvent.TRACK_UNMUTED,
+      ffcPublication,
+      ffcParticipant,
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.TRACK_UNMUTED, ffcPublication, ffcParticipant);
+  }
+
+  private _handleLocalTrackPublished = (publication: LocalTrackPublication, participant: LocalParticipant) => {
+    const ffcPublication = wrapTrackPublication(publication) as FFCLocalTrackPublication;
+    const ffcParticipant = wrapParticipant(participant) as FFCLocalParticipant;
+    this.emit(
+      FFCRtcVideoRoomEvent.LOCAL_TRACK_PUBLISHED,
+      ffcPublication,
+      ffcParticipant,
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.LOCAL_TRACK_PUBLISHED, ffcPublication, ffcParticipant);
+  }
+
+  private _handleLocalTrackUnpublished = (publication: LocalTrackPublication, participant: LocalParticipant) => {
+    const ffcPublication = wrapTrackPublication(publication) as FFCLocalTrackPublication;
+    const ffcParticipant = wrapParticipant(participant) as FFCLocalParticipant;
+    this.emit(
+      FFCRtcVideoRoomEvent.LOCAL_TRACK_UNPUBLISHED,
+      ffcPublication,
+      ffcParticipant,
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.LOCAL_TRACK_UNPUBLISHED, ffcPublication, ffcParticipant);
+  }
+
+  private _handleLocalAudioSilenceDetected = (publication: LocalTrackPublication) => {
+    const ffcPublication = wrapTrackPublication(publication) as FFCLocalTrackPublication;
+    this.emit(FFCRtcVideoRoomEvent.LOCAL_AUDIO_SILENCE_DETECTED, ffcPublication);
+    console.log('emitting', FFCRtcVideoRoomEvent.LOCAL_AUDIO_SILENCE_DETECTED, ffcPublication);
+  }
+
+  private _handleParticipantMetadataChanged = (
+    metadata: string | undefined,
+    participant: RemoteParticipant | LocalParticipant,
+  ) => {
+    const ffcParticipant = wrapParticipant(participant) as FFCLocalParticipant;
+    this.emit(FFCRtcVideoRoomEvent.PARTICIPANT_METADATA_CHANGED, metadata, ffcParticipant);
+    console.log('emitting', FFCRtcVideoRoomEvent.PARTICIPANT_METADATA_CHANGED, metadata, ffcParticipant);
+  }
+
+  private _handleParticipantNameChanged = (name: string, participant: RemoteParticipant | LocalParticipant) => {
+    const ffcParticipant = wrapParticipant(participant) as FFCLocalParticipant | FFCRemoteParticipant;
+    this.emit(FFCRtcVideoRoomEvent.PARTICIPANT_NAME_CHANGED, name, ffcParticipant);
+    console.log('emitting', FFCRtcVideoRoomEvent.PARTICIPANT_NAME_CHANGED, name, ffcParticipant);
+  }
+
+  private _handleParticipantPermissionsChanged = (
+    prevPermissions: ParticipantPermission | undefined,
+    participant: RemoteParticipant | LocalParticipant,
+  ) => {
+    const ffcPrevPermissions = prevPermissions ? FFCParticipantPermission.fromParticipantPermission(prevPermissions) : undefined;
+    const ffcParticipant = wrapParticipant(participant) as FFCLocalParticipant | FFCRemoteParticipant;
+    this.emit(FFCRtcVideoRoomEvent.PARTICIPANT_PERMISSIONS_CHANGED, ffcPrevPermissions, ffcParticipant);
+    console.log('emitting', FFCRtcVideoRoomEvent.PARTICIPANT_PERMISSIONS_CHANGED, ffcPrevPermissions, ffcParticipant);
+  }
+
+  private _handleParticipantAttributesChanged = (
+    changedAttributes: Record<string, string>,
+    participant: RemoteParticipant | LocalParticipant,
+  ) => {
+    const ffcParticipant = wrapParticipant(participant) as FFCLocalParticipant | FFCRemoteParticipant;
+    this.emit(FFCRtcVideoRoomEvent.PARTICIPANT_ATTRIBUTES_CHANGED, changedAttributes, ffcParticipant);
+    console.log('emitting', FFCRtcVideoRoomEvent.PARTICIPANT_ATTRIBUTES_CHANGED, changedAttributes, ffcParticipant);
+  }
+
+  private _handleActiveSpeakersChanged = (speakers: Array<Participant>) => {
+    const ffcSpeakers = speakers.map((participant) => wrapParticipant(participant));
+    this.emit(
+      FFCRtcVideoRoomEvent.ACTIVE_SPEAKERS_CHANGED,
+      ffcSpeakers,
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.ACTIVE_SPEAKERS_CHANGED, ffcSpeakers);
+  }
+
+  private _handleRoomMetadataChanged = (metadata: string) => {
+    this.emit(FFCRtcVideoRoomEvent.ROOM_METADATA_CHANGED, metadata);
+    console.log('emitting', FFCRtcVideoRoomEvent.ROOM_METADATA_CHANGED, metadata);
+  }
+
+  private _handleConnectionQualityChanged = (quality: ConnectionQuality, participant: Participant) => {
+    const ffcQuality = FFCConnectionQuality.fromConnectionQuality(quality);
+    const ffcParticipant = wrapParticipant(participant);
+    this.emit(
+      FFCRtcVideoRoomEvent.CONNECTION_QUALITY_CHANGED,
+      ffcQuality,
+      ffcParticipant,
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.CONNECTION_QUALITY_CHANGED, ffcQuality, ffcParticipant);
+  }
+
+  private _handleMediaDevicesError = (error: Error) => {
+    this.emit(FFCRtcVideoRoomEvent.MEDIA_DEVICES_ERROR, error);
+    console.log('emitting', FFCRtcVideoRoomEvent.MEDIA_DEVICES_ERROR, error);
+  }
+
+  private _handleTrackStreamStateChanged = (
+    publication: RemoteTrackPublication,
+    streamState: Track.StreamState,
+    participant: RemoteParticipant,
+  ) => {
+    const ffcPublication = wrapTrackPublication(publication) as FFCRemoteTrackPublication;
+    const ffcState = FFCTrack.fromTrackStreamState(streamState);
+    const ffcParticipant = wrapParticipant(participant) as FFCRemoteParticipant;
+    this.emit(
+      FFCRtcVideoRoomEvent.TRACK_STREAM_STATE_CHANGED,
+      ffcPublication,
+      ffcState,
+      ffcParticipant,
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.TRACK_STREAM_STATE_CHANGED, ffcPublication, ffcState, ffcParticipant);
+  }
+
+  private _handleTrackSubscriptionPermissionChanged = (
+    publication: RemoteTrackPublication,
+    status: TrackPublication.PermissionStatus,
+    participant: RemoteParticipant,
+  ) => {
+    const ffcPublication = wrapTrackPublication(publication) as FFCRemoteTrackPublication;
+    const ffcStatus = FFCTrackPublication.fromPermissionStatus(status);
+    const ffcParticipant = wrapParticipant(participant) as FFCRemoteParticipant;
+    this.emit(
+      FFCRtcVideoRoomEvent.TRACK_SUBSCRIPTION_PERMISSION_CHANGED,
+      ffcPublication,
+      ffcStatus,
+      ffcParticipant,
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.TRACK_SUBSCRIPTION_PERMISSION_CHANGED, ffcPublication, ffcStatus, ffcParticipant);
+  }
+
+  private _handleTrackSubscriptionStatusChanged = (
+    publication: RemoteTrackPublication,
+    status: TrackPublication.SubscriptionStatus,
+    participant: RemoteParticipant,
+  ) => {
+    const ffcPublication = wrapTrackPublication(publication) as FFCRemoteTrackPublication;
+    const ffcStatus = FFCTrackPublication.fromSubscriptionStatus(status);
+    const ffcParticipant = wrapParticipant(participant) as FFCRemoteParticipant;
+    this.emit(
+      FFCRtcVideoRoomEvent.TRACK_SUBSCRIPTION_STATUS_CHANGED,
+      ffcPublication,
+      ffcStatus,
+      ffcParticipant,
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.TRACK_SUBSCRIPTION_STATUS_CHANGED, ffcPublication, ffcStatus, ffcParticipant);
+  }
+
+  private _handleAudioPlaybackChanged = (playing: boolean) => {
+    this.emit(FFCRtcVideoRoomEvent.AUDIO_PLAYBACK_STATUS_CHANGED, playing);
+    console.log('emitting', FFCRtcVideoRoomEvent.AUDIO_PLAYBACK_STATUS_CHANGED, playing);
+  }
+
+  private _handleVideoPlaybackChanged = (playing: boolean) => {
+    this.emit(FFCRtcVideoRoomEvent.VIDEO_PLAYBACK_STATUS_CHANGED, playing);
+    console.log('emitting', FFCRtcVideoRoomEvent.VIDEO_PLAYBACK_STATUS_CHANGED, playing);
+  }
+
+  private _handleSignalConnected = () => {
+    this.emit(FFCRtcVideoRoomEvent.SIGNAL_CONNECTED);
+    console.log('emitting', FFCRtcVideoRoomEvent.SIGNAL_CONNECTED);
+  }
+
+  private _handleRecordingStatusChanged = (recording: boolean) => {
+    this.emit(FFCRtcVideoRoomEvent.RECORDING_STATUS_CHANGED, recording);
+    console.log('emitting', FFCRtcVideoRoomEvent.RECORDING_STATUS_CHANGED, recording);
+  }
+
+  private _handleActiveDeviceChanged = (kind: MediaDeviceKind, deviceId: string) => {
+    this.emit(FFCRtcVideoRoomEvent.ACTIVE_DEVICE_CHANGED, kind, deviceId);
+    console.log('emitting', FFCRtcVideoRoomEvent.ACTIVE_DEVICE_CHANGED, kind, deviceId);
+  }
+
+  private _handleLocalTrackSubscribed = (publication: LocalTrackPublication, participant: LocalParticipant) => {
+    const ffcPublication = wrapTrackPublication(publication) as FFCLocalTrackPublication;
+    const ffcParticipant = wrapParticipant(participant) as FFCLocalParticipant;
+    this.emit(
+      FFCRtcVideoRoomEvent.LOCAL_TRACK_SUBSCRIBED,
+      ffcPublication,
+      ffcParticipant,
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.LOCAL_TRACK_SUBSCRIBED, ffcPublication, ffcParticipant);
+  }
+
+  private _handleMetricsReceived = (metrics: MetricsBatch, participant?: Participant) => {
+    const ffcMetricsBatch = new FFCMetricsBatch(metrics);
+    const ffcParticipant = participant ? wrapParticipant(participant) : undefined;
+    this.emit(
+      FFCRtcVideoRoomEvent.METRICS_RECEIVED,
+      ffcMetricsBatch,
+      ffcParticipant,
+    );
+    console.log('emitting', FFCRtcVideoRoomEvent.METRICS_RECEIVED, ffcMetricsBatch, ffcParticipant);
+  }
 }
 
 export type FFCRtcVideoRoomEventCallbacks = {
@@ -629,7 +630,7 @@ export type FFCRtcVideoRoomEventCallbacks = {
     publication: FFCLocalTrackPublication,
     participant: FFCLocalParticipant,
   ) => void;
-  LOCAL_AUDIO_SILENCE_DETECTED: /*localAudioSilenceDetected:*/ (publication: LocalTrackPublication) => void;
+  LOCAL_AUDIO_SILENCE_DETECTED: /*localAudioSilenceDetected:*/ (publication: FFCLocalTrackPublication) => void;
   ACTIVE_SPEAKERS_CHANGED: /*activeSpeakersChanged:*/ (speakers: Array<FFCParticipant>) => void;
   PARTICIPANT_METADATA_CHANGED: /*participantMetadataChanged:*/ (metadata: string | undefined, participant: FFCParticipant) => void;
   PARTICIPANT_NAME_CHANGED: /*participantNameChanged:*/ (name: string, participant: FFCLocalParticipant | FFCRemoteParticipant) => void;
