@@ -1,6 +1,6 @@
 import * as log from 'loglevel';
 
-export enum LogLevel {
+export enum FFCLogLevel {
   trace = 0,
   debug = 1,
   info = 2,
@@ -9,22 +9,23 @@ export enum LogLevel {
   silent = 5,
 }
 
-export enum LoggerNames {
-  Default = 'ffc',
-  //Room = 'livekit-room',
-  //Participant = 'livekit-participant',
-  //Track = 'livekit-track',
-  //Publication = 'livekit-track-publication',
-  //Engine = 'livekit-engine',
-  //Signal = 'livekit-signal',
-  //PCManager = 'livekit-pc-manager',
-  //PCTransport = 'livekit-pc-transport',
-  //E2EE = 'lk-e2ee',
+
+export enum FFCLoggerNames {
+  Default = 'ffc-rtc',
+  Room = 'ffc-rtc-room',
+  Participant = 'ffc-rtc-participant',
+  Track = 'ffc-rtc-track',
+  Publication = 'ffc-rtc-track-publication',
+  Engine = 'ffc-rtc-engine',
+  Signal = 'ffc-rtc-signal',
+  PCManager = 'ffc-rtc-pc-manager',
+  PCTransport = 'ffc-rtc-pc-transport',
+  E2EE = 'ffc-rtc-lk-e2ee',
 }
 
-type LogLevelString = keyof typeof LogLevel;
+type FFCLogLevelString = keyof typeof FFCLogLevel;
 
-export type StructuredLogger = log.Logger & {
+export type FFCStructuredLogger = log.Logger & {
   trace: (msg: string, context?: object) => void;
   debug: (msg: string, context?: object) => void;
   info: (msg: string, context?: object) => void;
@@ -35,40 +36,36 @@ export type StructuredLogger = log.Logger & {
   getLevel: () => number;
 };
 
-let livekitLogger = log.getLogger('ffc');
-const livekitLoggers = Object.values(LoggerNames).map((name) => log.getLogger(name));
+let ffcRtcLogger = log.getLogger('ffc-rtc');
+const ffcRtcLoggers = Object.values(FFCLoggerNames).map((name) => log.getLogger(name));
 
-livekitLogger.setDefaultLevel(LogLevel.info);
+ffcRtcLogger.setDefaultLevel(FFCLogLevel.info);
 
-export default livekitLogger as StructuredLogger;
+export default ffcRtcLogger as FFCStructuredLogger;
 
 /**
  * @internal
  */
 export function getLogger(name: string) {
   const logger = log.getLogger(name);
-  logger.setDefaultLevel(livekitLogger.getLevel());
-  return logger as StructuredLogger;
+  logger.setDefaultLevel(ffcRtcLogger.getLevel());
+  return logger as FFCStructuredLogger;
 }
 
-export function setLogLevel(level: LogLevel | LogLevelString, loggerName?: LoggerNames) {
+export function setLogLevel(level: FFCLogLevel | FFCLogLevelString, loggerName?: FFCLoggerNames) {
   if (loggerName) {
     log.getLogger(loggerName).setLevel(level);
   } else {
-    for (const logger of livekitLoggers) {
+    for (const logger of ffcRtcLoggers) {
       logger.setLevel(level);
     }
   }
 }
 
-export type LogExtension = (level: LogLevel, msg: string, context?: object) => void;
+export type FFCLogExtension = (level: FFCLogLevel, msg: string, context?: object) => void;
 
-/**
- * use this to hook into the logging function to allow sending internal livekit logs to third party services
- * if set, the browser logs will lose their stacktrace information (see https://github.com/pimterry/loglevel#writing-plugins)
- */
-export function setLogExtension(extension: LogExtension, logger?: StructuredLogger) {
-  const loggers = logger ? [logger] : livekitLoggers;
+export function setLogExtension(extension: FFCLogExtension, logger?: FFCStructuredLogger) {
+  const loggers = logger ? [logger] : ffcRtcLoggers;
 
   loggers.forEach((logR) => {
     const originalFactory = logR.methodFactory;
@@ -76,8 +73,8 @@ export function setLogExtension(extension: LogExtension, logger?: StructuredLogg
     logR.methodFactory = (methodName, configLevel, loggerName) => {
       const rawMethod = originalFactory(methodName, configLevel, loggerName);
 
-      const logLevel = LogLevel[methodName as LogLevelString];
-      const needLog = logLevel >= configLevel && logLevel < LogLevel.silent;
+      const logLevel = FFCLogLevel[methodName as FFCLogLevelString];
+      const needLog = logLevel >= configLevel && logLevel < FFCLogLevel.silent;
 
       return (msg, context?: [msg: string, context: object]) => {
         if (context) rawMethod(msg, context);
@@ -91,4 +88,4 @@ export function setLogExtension(extension: LogExtension, logger?: StructuredLogg
   });
 }
 
-//export const workerLogger = log.getLogger('lk-e2ee') as StructuredLogger;
+export const ffcWorkerLogger = log.getLogger('lk-e2ee') as FFCStructuredLogger;
