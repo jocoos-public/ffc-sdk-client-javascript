@@ -67,11 +67,11 @@ export default class FlipFlopCloud {
     return this.instance.deleteVideoRoom(videoRoomId);
   }
 
-  static issueVideoRoomToken(videoRoomId: number, appUserId: string, params?: FFCIssueRtcVideoRoomTokenParams): Promise<FFCRtcVideoRoomTokenDto> {
+  static issueVideoRoomToken(videoRoomId: number, params?: FFCIssueRtcVideoRoomTokenParams): Promise<FFCRtcVideoRoomTokenDto> {
     if (!FlipFlopCloud.instance) {
       throw new SdkNotInitializedError();
     }
-    return this.instance.issueVideoRoomWebRtcToken(videoRoomId, appUserId, params).then((res) => {
+    return this.instance.issueVideoRoomWebRtcToken(videoRoomId, params).then((res) => {
       return {
         webRtcServerUrl: res.webRtcServerUrl,
         webRtcToken: res.webRtcToken,
