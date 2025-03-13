@@ -12,10 +12,9 @@ import {
   RemoteVideoTrack,
   Room,
   RoomEvent,
-  Track,
-} from "livekit-client";
-import { EventHandler } from "./EventHandler";
-
+  Track
+} from 'livekit-client';
+import { EventHandler } from './EventHandler';
 
 export type GetFunctionKeys<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
@@ -34,7 +33,7 @@ export type ParticipantState = {
 };
 
 export type ViewContexts = {
-  view: unknown
+  view: unknown;
 };
 
 export type TrackRemoteReferenceByVases = {
@@ -89,7 +88,11 @@ export interface RtcEventPayloads {
     microphone: DeviceState;
   };
   message: { target: string; action: any };
-  status: "LOADING" | "LOADED" | "DISCONNECTED";
+  status: 'LOADING' | 'LOADED' | 'DISCONNECTED';
+  context: {
+    local: ParticipantState;
+    remotes: Record<string, ParticipantState>;
+  };
 }
 
 export class LivekitController extends EventHandler<RtcEventPayloads> {
@@ -106,7 +109,7 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
 
   constructor() {
     super();
-    
+
     this.remotes = {};
   }
 
@@ -116,7 +119,7 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
       const publication = await this.local.participant.publishTrack(
         this.localAudioTrack,
         {
-          source: Track.Source.Microphone,
+          source: Track.Source.Microphone
         }
       );
 
@@ -132,7 +135,7 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
       const publication = await this.local.participant.publishTrack(
         this.localVideoTrack,
         {
-          source: Track.Source.Camera,
+          source: Track.Source.Camera
         }
       );
 
@@ -198,20 +201,20 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
       if (publication.kind === Track.Kind.Video) {
         remote.camera = {
           publication: publication,
-          track: publication.videoTrack as RemoteVideoTrack,
+          track: publication.videoTrack as RemoteVideoTrack
         };
         this.context!.remotes[id].camera = {
           enabled: false,
-          muted: undefined,
+          muted: undefined
         };
       } else if (publication.kind === Track.Kind.Audio) {
         remote.microphone = {
           publication: publication,
-          track: publication.audioTrack as RemoteAudioTrack,
+          track: publication.audioTrack as RemoteAudioTrack
         };
         this.context!.remotes[id].microphone = {
           enabled: false,
-          muted: undefined,
+          muted: undefined
         };
       }
       publication.setSubscribed(true);
@@ -221,13 +224,13 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
         remote.camera = undefined;
         this.context!.remotes[id].camera = {
           enabled: undefined,
-          muted: undefined,
+          muted: undefined
         };
       } else if (publication.kind === Track.Kind.Audio) {
         remote.microphone = undefined;
         this.context!.remotes[id].microphone = {
           enabled: undefined,
-          muted: undefined,
+          muted: undefined
         };
       }
       publication.setSubscribed(false);
@@ -241,20 +244,20 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
       if (publication.kind === Track.Kind.Video) {
         remote.camera = {
           publication: publication as RemoteTrackPublication,
-          track: publication.videoTrack as RemoteVideoTrack,
+          track: publication.videoTrack as RemoteVideoTrack
         };
         this.context!.remotes[id].camera = {
           enabled: publication.isSubscribed,
-          muted: publication.isMuted,
+          muted: publication.isMuted
         };
       } else if (publication.kind === Track.Kind.Audio) {
         remote.microphone = {
           publication: publication as RemoteTrackPublication,
-          track: publication.audioTrack as RemoteAudioTrack,
+          track: publication.audioTrack as RemoteAudioTrack
         };
         this.context!.remotes[id].microphone = {
           enabled: publication.isSubscribed,
-          muted: publication.isMuted,
+          muted: publication.isMuted
         };
       }
       publication.setSubscribed(true);
@@ -283,7 +286,7 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
     }
   ) {
     this.context = context;
-    this.emit("status", "LOADING");
+    this.emit('status', 'LOADING');
 
     this.audioContext = new AudioContext({ sampleRate: 48000 });
     const room = new Room({
@@ -291,17 +294,17 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
       dynacast: true,
 
       audioCaptureDefaults: {
-        deviceId: micDevice ? micDevice.id : "default",
+        deviceId: micDevice ? micDevice.id : 'default',
         echoCancellation: false,
         noiseSuppression: false,
-        autoGainControl: false,
+        autoGainControl: false
       },
       videoCaptureDefaults: {
-        deviceId: camDevice ? camDevice.id : "default",
+        deviceId: camDevice ? camDevice.id : 'default'
       },
       webAudioMix: {
-        audioContext: this.audioContext,
-      },
+        audioContext: this.audioContext
+      }
     });
 
     this.room = room;
@@ -329,7 +332,7 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
             }
           }
 
-          this.emit("message", { target: data.target, action: data.action });
+          this.emit('message', { target: data.target, action: data.action });
           // this.emit(data.target, data.action);
         } catch (error) {
           console.log(error);
@@ -339,13 +342,12 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
 
     room.addListener(RoomEvent.Connected, async () => {
       this.local = {
-        participant: room.localParticipant,
+        participant: room.localParticipant
       };
 
       const metadata = this.local.participant.metadata
         ? (JSON.parse(this.local.participant.metadata) as any)
         : undefined;
-      
 
       this.local.participant.on(
         ParticipantEvent.LocalTrackPublished,
@@ -354,17 +356,17 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
             if (publication.kind === Track.Kind.Video) {
               this.local.camera = {
                 publication: publication,
-                track: publication.videoTrack as LocalVideoTrack,
+                track: publication.videoTrack as LocalVideoTrack
               };
               this.context!.local.camera.enabled = true;
             } else if (publication.kind === Track.Kind.Audio) {
               this.local.microphone = {
                 publication: publication,
-                track: publication.audioTrack as LocalAudioTrack,
+                track: publication.audioTrack as LocalAudioTrack
               };
               this.context!.local.microphone.enabled = true;
-              
             }
+            this.emit('context', this.context);
           }
         }
       );
@@ -380,6 +382,7 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
               this.local.microphone = undefined;
               this.context!.local.microphone.enabled = false;
             }
+            this.emit('context', this.context);
           }
         }
       );
@@ -390,6 +393,7 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
         } else if (track.source === Track.Source.Microphone) {
           this.context!.local.microphone.muted = true;
         }
+        this.emit('context', this.context);
 
         // this.context!.local.camera.muted = true;
       });
@@ -400,11 +404,13 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
         } else if (track.source === Track.Source.Microphone) {
           this.context!.local.microphone.muted = false;
         }
+        this.emit('context', this.context);
       });
       this.context!.local.metadata = metadata;
+      this.emit('context', this.context);
 
-      this.emit("local_join", {
-        metadata: metadata!,
+      this.emit('local_join', {
+        metadata: metadata!
       });
 
       if (micDevice) {
@@ -417,7 +423,7 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
 
       room.remoteParticipants.forEach((participant) => {
         this.remotes[participant.identity] = {
-          participant: participant,
+          participant: participant
         };
         const metadata = participant.metadata
           ? (JSON.parse(participant.metadata) as any)
@@ -426,25 +432,26 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
         this.context!.remotes[participant.identity] = {
           camera: {
             muted: undefined,
-            enabled: undefined,
+            enabled: undefined
           },
           microphone: {
             muted: undefined,
-            enabled: undefined,
+            enabled: undefined
           },
-          metadata: metadata,
+          metadata: metadata
         };
 
-        this.emit("remote_join", {
-          metadata: metadata!,
+        this.emit('remote_join', {
+          metadata: metadata!
         });
+        this.emit('context', this.context);
 
         this.addRemoteEventHandler(this.remotes[participant.identity]);
       });
 
       room.addListener(RoomEvent.ParticipantConnected, (participant) => {
         this.remotes[participant.identity] = {
-          participant: participant,
+          participant: participant
         };
         const metadata = participant.metadata
           ? (JSON.parse(participant.metadata) as any)
@@ -453,33 +460,35 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
         this.context!.remotes[participant.identity] = {
           camera: {
             muted: undefined,
-            enabled: undefined,
+            enabled: undefined
           },
           microphone: {
             muted: undefined,
-            enabled: undefined,
+            enabled: undefined
           },
-          metadata: metadata,
+          metadata: metadata
         };
 
-        this.emit("remote_join", {
-          metadata: metadata!,
+        this.emit('remote_join', {
+          metadata: metadata!
         });
+        this.emit('context', this.context);
 
         this.addRemoteEventHandler(this.remotes[participant.identity]);
       });
 
       room.on(RoomEvent.ParticipantDisconnected, (participant) => {
-        this.emit("remote_leave", {
-          identity: participant.identity,
+        this.emit('remote_leave', {
+          identity: participant.identity
         });
         this.remotes[participant.identity].participant.removeAllListeners();
         delete this.remotes[participant.identity];
 
         delete this.context!.remotes[participant.identity];
+        this.emit('context', this.context);
       });
 
-      this.emit("status", "LOADED");
+      this.emit('status', 'LOADED');
       // this.context!.setStatus("LOADED");
     });
 
@@ -487,21 +496,22 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
       this.context!.local = {
         camera: {
           muted: false,
-          enabled: false,
+          enabled: false
         },
         microphone: {
           muted: false,
-          enabled: false,
-        },
+          enabled: false
+        }
       };
       this.context!.remotes = {};
+      this.emit('context', this.context);
       this.local = undefined;
 
       this.remotes = {};
 
       room.removeAllListeners();
       // this.context!.setStatus("DISCONNECTED");
-      this.emit("status", "DISCONNECTED");
+      this.emit('status', 'DISCONNECTED');
     });
 
     await room.connect(url, token, { autoSubscribe: true });
@@ -518,7 +528,7 @@ export class LivekitController extends EventHandler<RtcEventPayloads> {
         encoder.encode(JSON.stringify({ target, action: { name, payload } })),
         {
           reliable: true,
-          destinationIdentities: destinationIdentities,
+          destinationIdentities: destinationIdentities
         }
       );
     } catch (error) {

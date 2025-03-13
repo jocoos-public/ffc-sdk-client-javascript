@@ -5,21 +5,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { FFC_Controller, ParticipantState } from '@/logics/FFCController';
 
-import {
-  FFCLocalAudioTrack,
-  FFCLocalVideoTrack
-} from 'ffc-sdk-client-javascript';
-
 // export가 필요한 목록
-import { FlipFlopCloudApi } from '../../../dist/src/api/ffc-api';
-import { FFCPagesDto, FFCVideoRoomDto } from '../../../dist/src/api/types/data';
 import {
-  FFCVideoRoomType,
-  FFCAccessLevel,
-  FFCCreatorType
-} from '../../../dist/src/api/types/enums';
-
-import { VideoTrackRenderer } from './VideoTrackRenderer';
+  FFCPagesDto,
+  FFCVideoRoomDto
+} from '../../../../dist/src/api/types/data';
+import { VideoTrackRenderer } from '../VideoTrackRenderer';
+import { LivekitController } from '@/logics/LivekitController';
+import { LocalAudioTrack, LocalVideoTrack } from 'livekit-client';
+// import { FFCVideoRoomType } from "../../../dist/src/api/types/enums.js";
+// import { createLocalAudioTrack, createLocalTracks, createLocalVideoTrack, FFCLocalTrack, FFCLocalVideoTrack } from "../../../dist/src";
 
 export default function Home() {
   const [context, setContext] = useState<{
@@ -46,13 +41,16 @@ export default function Home() {
   const [local, setLocal] = useState<string>('');
 
   const [rtc, setRtc] = useState<FFC_Controller | null>(null);
+  const [livekit, setLivekit] = useState<LivekitController | null>(null);
 
-  const [url, setUrl] = useState<string>('https://api-sandbox.flipflop.cloud');
-  const [token, setToken] = useState<string>(
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJudWxsIiwianRpIjoiMnVGQ3dtWWVQYW1aTTltNzU3VkhIN242bzBSIiwiaXNzIjoiRmxpcEZsb3AiLCJjbGFpbXMiOnsiYXBwSWQiOjgsInR5cGUiOiJNRU1CRVIiLCJhcHBVc2VySWQiOiIxIiwibWVtYmVySWQiOjEzOTMsInVzZXJuYW1lIjoidXNlcjEifSwiaWF0IjoxNzQxODM1MTc1LCJleHAiOjE3NDE5MjE1NzV9.uEylgjIlgvUUu2W1pZTO3Jkt8sU2oIfyw1gsaFTwNN8'
-  );
   useEffect(() => {
-    const rtc = new FFC_Controller(url, token);
+    const rtc = new FFC_Controller(
+      'https://api-sandbox.flipflop.cloud',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJudWxsIiwianRpIjoiMnVGQ3dtWWVQYW1aTTltNzU3VkhIN242bzBSIiwiaXNzIjoiRmxpcEZsb3AiLCJjbGFpbXMiOnsiYXBwSWQiOjgsInR5cGUiOiJNRU1CRVIiLCJhcHBVc2VySWQiOiIxIiwibWVtYmVySWQiOjEzOTMsInVzZXJuYW1lIjoidXNlcjEifSwiaWF0IjoxNzQxODM1MTc1LCJleHAiOjE3NDE5MjE1NzV9.uEylgjIlgvUUu2W1pZTO3Jkt8sU2oIfyw1gsaFTwNN8'
+    );
+
+    const livekit = new LivekitController();
+
     const prepareMediaTrack = async () => {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -68,7 +66,7 @@ export default function Home() {
       if (tracks.length > 0) {
         const mediaTrack = tracks[0];
 
-        rtc.localAudioTrack = new FFCLocalAudioTrack(mediaTrack);
+        livekit.localAudioTrack = new LocalAudioTrack(mediaTrack);
       }
 
       const videoTracks = stream.getVideoTracks();
@@ -76,30 +74,31 @@ export default function Home() {
       if (videoTracks.length > 0) {
         const mediaTrack = videoTracks[0];
 
-        rtc.localVideoTrack = new FFCLocalVideoTrack(mediaTrack);
+        livekit.localVideoTrack = new LocalVideoTrack(mediaTrack);
       }
     };
 
-    rtc.on('status', (arg) => {
+    livekit.on('status', (arg) => {
       setStatus(arg);
     });
-    rtc.on('local_join', (args) => {
+    livekit.on('local_join', (args) => {
       setLocal(JSON.stringify(args));
     });
-    rtc.on('remote_join', (args) => {
+    livekit.on('remote_join', (args) => {
       console.log(args);
     });
-    rtc.on('remote_leave', (args) => {
+    livekit.on('remote_leave', (args) => {
       console.log(args.identity);
     });
-    rtc.on('context', (args) => {
+    livekit.on('context', (args) => {
       console.log(args);
       setContext({ ...args });
     });
     prepareMediaTrack().then(() => {
+      setLivekit(livekit);
       setRtc(rtc);
     });
-  }, [url, token]);
+  }, []);
 
   const setListVideoRooms = useCallback(() => {
     if (rtc) {
@@ -130,15 +129,11 @@ export default function Home() {
         flexDirection: 'column'
       }}
     >
-      <label>url</label>
-      <input value={url} onChange={(e) => setUrl(e.target.value)} />
-      <label>token</label>
-      <input value={token} onChange={(e) => setToken(e.target.value)} />
       <h1>{status}</h1>
 
-      {context.local ? (
+      {local ? (
         <div style={{ width: '200px', height: '200px' }}>
-          <VideoTrackRenderer track={rtc?.localVideoTrack} />
+          <VideoTrackRenderer track={livekit?.localVideoTrack} />
           {local}
         </div>
       ) : null}
@@ -146,8 +141,8 @@ export default function Home() {
       {Object.keys(context.remotes).map((d) => {
         return (
           <div key={d} style={{ width: '100px', height: '100px' }}>
-            {rtc?.remotes[d].camera?.track ? (
-              <VideoTrackRenderer track={rtc?.remotes[d].camera?.track} />
+            {livekit?.remotes[d].camera?.track ? (
+              <VideoTrackRenderer track={livekit?.remotes[d].camera?.track} />
             ) : null}
           </div>
         );
@@ -167,7 +162,7 @@ export default function Home() {
                   );
 
                   if (data) {
-                    await rtc!.connect(
+                    await livekit!.connect(
                       data?.webRtcServerUrl,
                       data?.webRtcToken,
                       context
@@ -208,7 +203,7 @@ export default function Home() {
 
                 // new FFCLocalVideoTrack()
 
-                await rtc?.publishVideo({
+                await livekit?.publishVideo({
                   id: 'default',
                   enabled: true
                 });
@@ -231,7 +226,7 @@ export default function Home() {
 
                 // new FFCLocalVideoTrack()
 
-                await rtc?.publishAudio({
+                await livekit?.publishAudio({
                   id: 'default',
                   enabled: true
                 });
@@ -247,7 +242,7 @@ export default function Home() {
           </button>
           <button
             onClick={async () => {
-              await rtc?.disconnect();
+              await livekit?.disconnect();
             }}
           >
             disconnect

@@ -92,10 +92,10 @@ export class FlipFlopCloudApi {
     });
   }
   
-  issueVideoRoomWebRtcToken(videoRoomId: number, appUserId: string, params?: FFCIssueRtcVideoRoomTokenParams): Promise<FFCRtcVideoRoomTokenDto> {
+  issueVideoRoomWebRtcToken(videoRoomId: number, params?: FFCIssueRtcVideoRoomTokenParams): Promise<FFCRtcVideoRoomTokenDto> {
     return this._request({
       method: 'POST',
-      url: `/v2/members/me/video-rooms/${videoRoomId}/members/${appUserId}/web-rtc-tokens`,
+      url: `/v2/members/me/video-rooms/${videoRoomId}/web-rtc-tokens`,
       data: params,
     }, 201);
   }

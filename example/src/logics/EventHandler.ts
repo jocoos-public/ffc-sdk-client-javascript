@@ -48,7 +48,7 @@ export class EventHandler<T> {
           queueMicrotask(
             this.callEmitFromMT.bind({
               func: this.handlers[event][i],
-              args: args,
+              args: args
             })
           );
         } catch (err) {

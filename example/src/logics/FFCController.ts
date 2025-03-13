@@ -28,9 +28,11 @@ import {
   FFCRtcVideoRoom,
   FFCRtcVideoRoomEvent,
   FFCTrack,
-} from 'ffc-sdk-client-javascript'
-import { EventHandler } from "./EventHandler";
-
+  FlipFlopCloud
+} from 'ffc-sdk-client-javascript';
+import { EventHandler } from './EventHandler';
+// 패키지에 포함되어야할 부분
+import { FlipFlopCloudApi } from '../../../dist/src/api/ffc-api';
 
 export type GetFunctionKeys<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
@@ -49,10 +51,10 @@ export type ParticipantState = {
 };
 
 export type ViewContexts = {
-  test: any
+  test: any;
 };
 
-export type TrackRemoteReferenceByVases = {
+export type TrackRemoteReferenceByFFC = {
   participant: FFCRemoteParticipant;
   camera?: {
     track: FFCRemoteVideoTrack;
@@ -63,7 +65,7 @@ export type TrackRemoteReferenceByVases = {
     publication: FFCRemoteTrackPublication;
   };
 };
-export type TrackLocalReferenceByVases = {
+export type TrackLocalReferenceByFFC = {
   participant: FFCLocalParticipant;
   camera?: {
     track: FFCLocalVideoTrack;
@@ -96,7 +98,6 @@ export interface RtcEventPayloads {
     camera: DeviceState;
     microphone: DeviceState;
   };
-
   remote_update: {
     identity: string;
     metadata?: any;
@@ -104,7 +105,11 @@ export interface RtcEventPayloads {
     microphone: DeviceState;
   };
   message: { target: string; action: any };
-  status: "LOADING" | "LOADED" | "DISCONNECTED";
+  status: 'LOADING' | 'LOADED' | 'DISCONNECTED';
+  context: {
+    local: ParticipantState;
+    remotes: Record<string, ParticipantState>;
+  };
 }
 
 export class FFC_Controller extends EventHandler<RtcEventPayloads> {
@@ -112,15 +117,17 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
   localVideoTrack?: FFCLocalVideoTrack;
   localAudioTrack?: FFCLocalAudioTrack;
   audioContext?: AudioContext;
-  local?: TrackLocalReferenceByVases;
-  remotes: Record<string, TrackRemoteReferenceByVases>;
+  local?: TrackLocalReferenceByFFC;
+  remotes: Record<string, TrackRemoteReferenceByFFC>;
   context?: {
     local: ParticipantState;
     remotes: Record<string, ParticipantState>;
   };
+  api: FlipFlopCloudApi;
 
-  constructor() {
+  constructor(baseUrl: string, accessToken: string) {
     super();
+    this.api = FlipFlopCloud.init(baseUrl, accessToken);
 
     this.remotes = {};
   }
@@ -131,7 +138,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       const publication = await this.local.participant.publishTrack(
         this.localAudioTrack,
         {
-          source: FFCTrack.Source.Microphone,
+          source: FFCTrack.Source.Microphone
         }
       );
 
@@ -147,17 +154,49 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       const publication = await this.local.participant.publishTrack(
         this.localVideoTrack,
         {
-          source: FFCTrack.Source.Camera,
+          source: FFCTrack.Source.Camera
         }
       );
 
       if (!device.enabled) {
         publication.mute();
       }
+    } else {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          deviceId: device.id
+        },
+        audio: false
+      });
+
+      const tracks = stream.getVideoTracks();
+
+      if (tracks.length > 0) {
+        const mediaTrack = tracks[0];
+
+        this.localVideoTrack = new FFCLocalVideoTrack(
+          mediaTrack,
+          {
+            deviceId: device.id
+          },
+          true
+        );
+
+        const publication = await this.local!.participant.publishTrack(
+          this.localAudioTrack!,
+          {
+            source: FFCTrack.Source.Camera
+          }
+        );
+
+        if (!device.enabled) {
+          publication.mute();
+        }
+      }
     }
   }
 
-  addRemoteEventHandler(remote: TrackRemoteReferenceByVases) {
+  addRemoteEventHandler(remote: TrackRemoteReferenceByFFC) {
     const id = remote.participant.identity;
 
     remote.participant.on(
@@ -174,6 +213,8 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
             this.context!.remotes[id].camera.enabled = true;
           }
         }
+
+        this.emit('context', this.context);
       }
     );
 
@@ -191,6 +232,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
             this.context!.remotes[id].camera.enabled = false;
           }
         }
+        this.emit('context', this.context);
       }
     );
 
@@ -200,6 +242,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       } else if (track.source === FFCTrack.Source.Camera) {
         this.context!.remotes[id].camera.muted = true;
       }
+      this.emit('context', this.context);
     });
     remote.participant.on(FFCParticipantEvent.TRACK_UNMUTED, (track) => {
       if (track.source === FFCTrack.Source.Microphone) {
@@ -207,71 +250,84 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       } else if (track.source === FFCTrack.Source.Camera) {
         this.context!.remotes[id].camera.muted = false;
       }
+      this.emit('context', this.context);
     });
 
-    remote.participant.on(FFCParticipantEvent.TRACK_PUBLISHED, (publication) => {
-      if (publication.kind === FFCTrack.Kind.Video) {
-        remote.camera = {
-          publication: publication,
-          track: publication.videoTrack as FFCRemoteVideoTrack,
-        };
-        this.context!.remotes[id].camera = {
-          enabled: false,
-          muted: undefined,
-        };
-      } else if (publication.kind === FFCTrack.Kind.Audio) {
-        remote.microphone = {
-          publication: publication,
-          track: publication.audioTrack as FFCRemoteAudioTrack,
-        };
-        this.context!.remotes[id].microphone = {
-          enabled: false,
-          muted: undefined,
-        };
+    remote.participant.on(
+      FFCParticipantEvent.TRACK_PUBLISHED,
+      (publication) => {
+        if (publication.kind === FFCTrack.Kind.Video) {
+          remote.camera = {
+            publication: publication,
+            track: publication.videoTrack as FFCRemoteVideoTrack
+          };
+          this.context!.remotes[id].camera = {
+            enabled: false,
+            muted: undefined
+          };
+        } else if (publication.kind === FFCTrack.Kind.Audio) {
+          remote.microphone = {
+            publication: publication,
+            track: publication.audioTrack as FFCRemoteAudioTrack
+          };
+          this.context!.remotes[id].microphone = {
+            enabled: false,
+            muted: undefined
+          };
+        }
+        this.emit('context', this.context);
+        publication.setSubscribed(true);
       }
-      publication.setSubscribed(true);
-    });
-    remote.participant.on(FFCParticipantEvent.TRACK_UNPUBLISHED, (publication) => {
-      if (publication.kind === FFCTrack.Kind.Video) {
-        remote.camera = undefined;
-        this.context!.remotes[id].camera = {
-          enabled: undefined,
-          muted: undefined,
-        };
-      } else if (publication.kind === FFCTrack.Kind.Audio) {
-        remote.microphone = undefined;
-        this.context!.remotes[id].microphone = {
-          enabled: undefined,
-          muted: undefined,
-        };
+    );
+    remote.participant.on(
+      FFCParticipantEvent.TRACK_UNPUBLISHED,
+      (publication) => {
+        if (publication.kind === FFCTrack.Kind.Video) {
+          remote.camera = undefined;
+          this.context!.remotes[id].camera = {
+            enabled: undefined,
+            muted: undefined
+          };
+        } else if (publication.kind === FFCTrack.Kind.Audio) {
+          remote.microphone = undefined;
+          this.context!.remotes[id].microphone = {
+            enabled: undefined,
+            muted: undefined
+          };
+        }
+        this.emit('context', this.context);
+        publication.setSubscribed(false);
       }
-      publication.setSubscribed(false);
-    });
-    remote.participant.on(FFCParticipantEvent.CONNECTION_QUALITY_CHANGED, (q) => {
-      console.log(q);
-    });
+    );
+    remote.participant.on(
+      FFCParticipantEvent.CONNECTION_QUALITY_CHANGED,
+      (q) => {
+        console.log(q);
+      }
+    );
 
     remote.participant.trackPublications.forEach((publication) => {
       // 퍼블리셔가 있나없나!?ㅎ
       if (publication.kind === FFCTrack.Kind.Video) {
         remote.camera = {
           publication: publication as FFCRemoteTrackPublication,
-          track: publication.videoTrack as FFCRemoteVideoTrack,
+          track: publication.videoTrack as FFCRemoteVideoTrack
         };
         this.context!.remotes[id].camera = {
           enabled: publication.isSubscribed,
-          muted: publication.isMuted,
+          muted: publication.isMuted
         };
       } else if (publication.kind === FFCTrack.Kind.Audio) {
         remote.microphone = {
           publication: publication as FFCRemoteTrackPublication,
-          track: publication.audioTrack as FFCRemoteAudioTrack,
+          track: publication.audioTrack as FFCRemoteAudioTrack
         };
         this.context!.remotes[id].microphone = {
           enabled: publication.isSubscribed,
-          muted: publication.isMuted,
+          muted: publication.isMuted
         };
       }
+      this.emit('context', this.context);
       publication.setSubscribed(true);
     });
   }
@@ -298,7 +354,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
     }
   ) {
     this.context = context;
-    this.emit("status", "LOADING");
+    this.emit('status', 'LOADING');
 
     this.audioContext = new AudioContext({ sampleRate: 48000 });
     const room = new FFCRtcVideoRoom({
@@ -306,17 +362,17 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       dynacast: true,
 
       audioCaptureDefaults: {
-        deviceId: micDevice ? micDevice.id : "default",
+        deviceId: micDevice ? micDevice.id : 'default',
         echoCancellation: false,
         noiseSuppression: false,
-        autoGainControl: false,
+        autoGainControl: false
       },
       videoCaptureDefaults: {
-        deviceId: camDevice ? camDevice.id : "default",
+        deviceId: camDevice ? camDevice.id : 'default'
       },
       webAudioMix: {
-        audioContext: this.audioContext,
-      },
+        audioContext: this.audioContext
+      }
     });
 
     this.room = room;
@@ -354,13 +410,12 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
 
     room.addListener(FFCRtcVideoRoomEvent.CONNECTED, async () => {
       this.local = {
-        participant: room.localParticipant,
+        participant: room.localParticipant
       };
 
       const metadata = this.local.participant.metadata
         ? (JSON.parse(this.local.participant.metadata) as any)
         : undefined;
-      
 
       this.local.participant.on(
         FFCParticipantEvent.LOCAL_TRACK_PUBLISHED,
@@ -369,18 +424,18 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
             if (publication.kind === FFCTrack.Kind.Video) {
               this.local.camera = {
                 publication: publication,
-                track: publication.videoTrack as FFCLocalVideoTrack,
+                track: publication.videoTrack as FFCLocalVideoTrack
               };
               this.context!.local.camera.enabled = true;
             } else if (publication.kind === FFCTrack.Kind.Audio) {
               this.local.microphone = {
                 publication: publication,
-                track: publication.audioTrack as FFCLocalAudioTrack,
+                track: publication.audioTrack as FFCLocalAudioTrack
               };
               this.context!.local.microphone.enabled = true;
-              
             }
           }
+          this.emit('context', this.context);
         }
       );
 
@@ -396,6 +451,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
               this.context!.local.microphone.enabled = false;
             }
           }
+          this.emit('context', this.context);
         }
       );
 
@@ -406,7 +462,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
           this.context!.local.microphone.muted = true;
         }
 
-        // this.context!.local.camera.muted = true;
+        this.emit('context', this.context);
       });
       this.local.participant.on(FFCParticipantEvent.TRACK_UNMUTED, (track) => {
         // this.context!.local.camera.muted = false;
@@ -415,11 +471,12 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
         } else if (track.source === FFCTrack.Source.Microphone) {
           this.context!.local.microphone.muted = false;
         }
+        this.emit('context', this.context);
       });
       this.context!.local.metadata = metadata;
 
-      this.emit("local_join", {
-        metadata: metadata!,
+      this.emit('local_join', {
+        metadata: metadata!
       });
 
       if (micDevice) {
@@ -432,7 +489,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
 
       room.remoteParticipants.forEach((participant) => {
         this.remotes[participant.identity] = {
-          participant: participant,
+          participant: participant
         };
         const metadata = participant.metadata
           ? (JSON.parse(participant.metadata) as any)
@@ -441,52 +498,73 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
         this.context!.remotes[participant.identity] = {
           camera: {
             muted: undefined,
-            enabled: undefined,
+            enabled: undefined
           },
           microphone: {
             muted: undefined,
-            enabled: undefined,
+            enabled: undefined
           },
-          metadata: metadata,
+          metadata: metadata
         };
 
-        this.emit("remote_join", {
-          metadata: metadata!,
+        this.emit('remote_join', {
+          metadata: metadata!
         });
+
+        this.emit('context', this.context);
 
         this.addRemoteEventHandler(this.remotes[participant.identity]);
       });
 
-      room.addListener(FFCRtcVideoRoomEvent.PARTICIPANT_CONNECTED, (participant) => {
-        this.remotes[participant.identity] = {
-          participant: participant,
-        };
-        const metadata = participant.metadata
-          ? (JSON.parse(participant.metadata) as any)
-          : undefined;
+      room.addListener(
+        FFCRtcVideoRoomEvent.PARTICIPANT_CONNECTED,
+        (participant) => {
+          this.remotes[participant.identity] = {
+            participant: participant
+          };
+          const metadata = participant.metadata
+            ? (JSON.parse(participant.metadata) as any)
+            : undefined;
 
-        this.context!.remotes[participant.identity] = {
-          camera: {
-            muted: undefined,
-            enabled: undefined,
-          },
-          microphone: {
-            muted: undefined,
-            enabled: undefined,
-          },
-          metadata: metadata,
-        };
+          this.context!.remotes[participant.identity] = {
+            camera: {
+              muted: undefined,
+              enabled: undefined
+            },
+            microphone: {
+              muted: undefined,
+              enabled: undefined
+            },
+            metadata: metadata
+          };
 
-        this.emit("remote_join", {
-          metadata: metadata!,
-        });
+          this.addRemoteEventHandler(this.remotes[participant.identity]);
 
-        this.addRemoteEventHandler(this.remotes[participant.identity]);
+          this.emit('remote_join', {
+            metadata: metadata!
+          });
+        }
+      );
+
+      room.on(FFCRtcVideoRoomEvent.TRACK_PUBLISHED, (pu, pa) => {
+        pa.emit(FFCParticipantEvent.TRACK_PUBLISHED, pu);
+      });
+
+      room.on(FFCRtcVideoRoomEvent.TRACK_UNPUBLISHED, (pu, pa) => {
+        pa.emit(FFCParticipantEvent.TRACK_UNPUBLISHED, pu);
+      });
+
+      room.on(FFCRtcVideoRoomEvent.TRACK_SUBSCRIBED, (t, pu, pa) => {
+        pa.emit(FFCParticipantEvent.TRACK_SUBSCRIBED, t, pu);
+      });
+
+      room.on(FFCRtcVideoRoomEvent.TRACK_UNSUBSCRIBED, (t, pu, pa) => {
+        pa.emit(FFCParticipantEvent.TRACK_UNSUBSCRIBED, t, pu);
       });
 
       room.on(FFCRtcVideoRoomEvent.PARTICIPANT_DISCONNECTED, (participant) => {
-        this.emit("remote_leave", {
-          identity: participant.identity,
+        this.emit('remote_leave', {
+          identity: participant.identity
         });
         this.remotes[participant.identity].participant.removeAllListeners();
         delete this.remotes[participant.identity];
@@ -494,7 +572,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
         delete this.context!.remotes[participant.identity];
       });
 
-      this.emit("status", "LOADED");
+      this.emit('status', 'LOADED');
       // this.context!.setStatus("LOADED");
     });
 
@@ -502,12 +580,12 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       this.context!.local = {
         camera: {
           muted: false,
-          enabled: false,
+          enabled: false
         },
         microphone: {
           muted: false,
-          enabled: false,
-        },
+          enabled: false
+        }
       };
       this.context!.remotes = {};
       this.local = undefined;
@@ -516,7 +594,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
 
       room.removeAllListeners();
       // this.context!.setStatus("DISCONNECTED");
-      this.emit("status", "DISCONNECTED");
+      this.emit('status', 'DISCONNECTED');
     });
 
     await room.connect(url, token, { autoSubscribe: true });
