@@ -146,6 +146,7 @@ export default class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEve
     return wrapParticipant(this._room.localParticipant) as FFCLocalParticipant;
   }
 
+  /** @internal */
   get engine(): RTCEngine {
     return this._room.engine;
   }

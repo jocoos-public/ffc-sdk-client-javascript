@@ -3,17 +3,15 @@ import type { FFCMemberDto, FFCNestedAppDto, FFCNestedMemberDto, FFCPagesDto, FF
 import type { FFCCreateVideoRoomParams, FFCIssueRtcVideoRoomTokenParams, FFCUpdateVideoRoomParams } from './api/types/params';
 import type { FFCListVideoRoomsQuery } from './api/types/query';
 import { SdkNotInitializedError } from './errors';
-import { initFFCTrackModule } from './rtc/wrapper-track';
 
 export default class FlipFlopCloud {
   private static instance: FlipFlopCloudApi;
   
-  static async init(baseUrl: string, accessToken: string, refreshToken?: string): Promise<void> {
+  static init(baseUrl: string, accessToken: string, refreshToken?: string): void {
     if (FlipFlopCloud.instance) {
-      throw new Error('FlipFlopCloud instance already initialized');
+      console.warn('FlipFlopCloud instance already initialized');
     }
     FlipFlopCloud.instance = new FlipFlopCloudApi(baseUrl, accessToken, refreshToken);
-    await initFFCTrackModule();
   }
 
   static getMe(): Promise<FFCMemberDto> {
@@ -68,11 +66,11 @@ export default class FlipFlopCloud {
     return this.instance.deleteVideoRoom(videoRoomId);
   }
 
-  static issueVideoRoomToken(videoRoomId: number, params?: FFCIssueRtcVideoRoomTokenParams): Promise<FFCRtcVideoRoomTokenDto> {
+  static issueRtcVideoRoomToken(videoRoomId: number, params?: FFCIssueRtcVideoRoomTokenParams): Promise<FFCRtcVideoRoomTokenDto> {
     if (!FlipFlopCloud.instance) {
       throw new SdkNotInitializedError();
     }
-    return this.instance.issueVideoRoomWebRtcToken(videoRoomId, params).then((res) => {
+    return this.instance.issueRtcVideoRoomToken(videoRoomId, params).then((res) => {
       return {
         webRtcServerUrl: res.webRtcServerUrl,
         webRtcToken: res.webRtcToken,
