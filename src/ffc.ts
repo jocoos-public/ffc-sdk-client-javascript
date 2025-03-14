@@ -3,16 +3,17 @@ import type { FFCMemberDto, FFCNestedAppDto, FFCNestedMemberDto, FFCPagesDto, FF
 import type { FFCCreateVideoRoomParams, FFCIssueRtcVideoRoomTokenParams, FFCUpdateVideoRoomParams } from './api/types/params';
 import type { FFCListVideoRoomsQuery } from './api/types/query';
 import { SdkNotInitializedError } from './errors';
+import { initFFCTrackModule } from './rtc/wrapper-track';
 
 export default class FlipFlopCloud {
   private static instance: FlipFlopCloudApi;
   
-  static init(baseUrl: string, accessToken: string, refreshToken?: string) {
+  static async init(baseUrl: string, accessToken: string, refreshToken?: string): Promise<void> {
     if (FlipFlopCloud.instance) {
       throw new Error('FlipFlopCloud instance already initialized');
     }
     FlipFlopCloud.instance = new FlipFlopCloudApi(baseUrl, accessToken, refreshToken);
-    return FlipFlopCloud.instance;
+    await initFFCTrackModule();
   }
 
   static getMe(): Promise<FFCMemberDto> {

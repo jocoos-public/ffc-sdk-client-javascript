@@ -6,10 +6,10 @@ import { TrackSource } from "@livekit/protocol";
 import { wrapTrack } from "../wrapper-track";
 import { FFCTrackEvent } from "../events";
 
-
 export abstract class FFCTrack<TrackKind extends FFCTrack.Kind = FFCTrack.Kind>
   extends (EventEmitter as new () => TypedEventEmitter<FFCTrackEventCallbacks>)
   implements IFFCTrack<TrackKind> {
+
   protected _track: Track;
 
   /** @internal */

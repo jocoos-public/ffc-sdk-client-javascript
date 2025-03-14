@@ -1,15 +1,34 @@
 import { LocalAudioTrack, LocalTrack, LocalVideoTrack, RemoteAudioTrack, RemoteVideoTrack, Track } from "livekit-client";
 import type { FFCTrack } from "./track/track";
-import FFCLocalAudioTrack from "./track/track-local-audio";
 import { FFCError } from "../errors";
-import FFCLocalVideoTrack from "./track/track-local-video";
-import FFCRemoteAudioTrack from "./track/track-remote-audio";
-import FFCRemoteVideoTrack from "./track/track-remote-video";
 
 const wrappedTracks: WeakMap<object, FFCTrack> = new WeakMap();
+let FFCLocalAudioTrack: any;
+let FFCLocalVideoTrack: any;
+let FFCRemoteAudioTrack: any;
+let FFCRemoteVideoTrack: any;
+let initialized = false;
+
+export function isFFCTrackModuleInitialized(): boolean {
+  return initialized;
+}
+
+export async function initFFCTrackModule(): Promise<void> {
+  if (initialized) {
+    return;
+  }
+  FFCLocalAudioTrack = (await import('./track/track-local-audio')).default;
+  FFCLocalVideoTrack = (await import('./track/track-local-video')).default;
+  FFCRemoteAudioTrack = (await import('./track/track-remote-audio')).default;
+  FFCRemoteVideoTrack = (await import('./track/track-remote-video')).default;
+  initialized = true;
+}
 
 /** @internal */
 export function wrapTrack(track: Track): FFCTrack {
+  if (!initialized) {
+    throw new FFCError('RTC_MODULE_INIT_ERROR', 'FFC sub modules not initialized');
+  }
   const existing = wrappedTracks.get(track);
   if (existing) {
     return existing;

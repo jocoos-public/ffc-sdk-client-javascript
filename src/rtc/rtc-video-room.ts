@@ -7,7 +7,7 @@ import type FFCRemoteParticipant from "./participant/participant-remote";
 import type FFCRemoteTrackPublication from "./track/track-publication-remote";
 import { wrapTrackPublication } from "./wrapper-track-publication";
 import type FFCRemoteTrack from "./track/track-remote";
-import { wrapTrack } from "./wrapper-track";
+import { initFFCTrackModule, isFFCTrackModuleInitialized, wrapTrack } from "./wrapper-track";
 import type { ParticipantPermission, MetricsBatch } from "@livekit/protocol";
 import type RTCEngine from "livekit-client/dist/src/room/RTCEngine";
 import type FFCParticipant from "./participant/participant";
@@ -215,6 +215,9 @@ export default class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEve
   }
 
   async connect(url: string, token: string, opts?: FFCRtcVideoRoomConnectOptions): Promise<void> {
+    if (!isFFCTrackModuleInitialized()) {
+      await initFFCTrackModule();
+    }
     await this._room.connect(url, token, opts);
   }
 
