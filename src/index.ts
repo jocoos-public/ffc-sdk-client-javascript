@@ -45,6 +45,8 @@ import {
 } from './rtc/utils';
 import FFCCriticalTimers from './rtc/timers';
 import FlipFlopCloud from './ffc';
+import { FFCAccessLevel, FFCCreatorType, FFCVideoRoomType } from './api/types/enums';
+import type { FFCPagesDto, FFCVideoRoomDto } from './api/types/data';
 export * from './rtc/options';
 export * from './errors';
 export * from './rtc/events';
@@ -56,6 +58,9 @@ export * from './rtc/track/processor/types';
 export * from './rtc/track/types';
 export {
   FlipFlopCloud,
+  FFCVideoRoomType,
+  FFCAccessLevel,
+  FFCCreatorType,
   FFCConnectionQuality,
   FFCConnectionState,
   FFCCriticalTimers,
@@ -103,6 +108,8 @@ export {
 };
 
 export type {
+  FFCPagesDto,
+  FFCVideoRoomDto,
   FFCAudioAnalyserOptions,
   FFCElementInfo,
   //FFCLiveKitReactNativeInfo,

@@ -31,8 +31,6 @@ import {
   FlipFlopCloud
 } from 'ffc-sdk-client-javascript';
 import { EventHandler } from './EventHandler';
-// 패키지에 포함되어야할 부분
-import { FlipFlopCloudApi } from '../../../dist/src/api/ffc-api';
 
 export type GetFunctionKeys<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
@@ -123,11 +121,10 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
     local: ParticipantState;
     remotes: Record<string, ParticipantState>;
   };
-  api: FlipFlopCloudApi;
 
   constructor(baseUrl: string, accessToken: string) {
     super();
-    this.api = FlipFlopCloud.init(baseUrl, accessToken);
+    FlipFlopCloud.init(baseUrl, accessToken);
 
     this.remotes = {};
   }

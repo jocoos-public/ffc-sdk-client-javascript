@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
@@ -7,17 +5,17 @@ import { FFC_Controller, ParticipantState } from '@/logics/FFCController';
 
 import {
   FFCLocalAudioTrack,
-  FFCLocalVideoTrack
+  FFCLocalVideoTrack,
+  FFCVideoRoomType,
+  FlipFlopCloud
 } from 'ffc-sdk-client-javascript';
 
 // export가 필요한 목록
-import { FlipFlopCloudApi } from '../../../dist/src/api/ffc-api';
-import { FFCPagesDto, FFCVideoRoomDto } from '../../../dist/src/api/types/data';
 import {
-  FFCVideoRoomType,
-  FFCAccessLevel,
-  FFCCreatorType
-} from '../../../dist/src/api/types/enums';
+  FFCPagesDto,
+  FFCVideoRoomDto,
+} from 'ffc-sdk-client-javascript';
+
 
 import { VideoTrackRenderer } from './VideoTrackRenderer';
 
@@ -49,7 +47,7 @@ export default function Home() {
 
   const [url, setUrl] = useState<string>('https://api-sandbox.flipflop.cloud');
   const [token, setToken] = useState<string>(
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJudWxsIiwianRpIjoiMnVGQ3dtWWVQYW1aTTltNzU3VkhIN242bzBSIiwiaXNzIjoiRmxpcEZsb3AiLCJjbGFpbXMiOnsiYXBwSWQiOjgsInR5cGUiOiJNRU1CRVIiLCJhcHBVc2VySWQiOiIxIiwibWVtYmVySWQiOjEzOTMsInVzZXJuYW1lIjoidXNlcjEifSwiaWF0IjoxNzQxODM1MTc1LCJleHAiOjE3NDE5MjE1NzV9.uEylgjIlgvUUu2W1pZTO3Jkt8sU2oIfyw1gsaFTwNN8'
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJudWxsIiwianRpIjoiMnVJUm5aMFR2UW1tdnBFQnRHT1N3eXl6QjZzIiwiaXNzIjoiRmxpcEZsb3AiLCJjbGFpbXMiOnsiYXBwSWQiOjgsInR5cGUiOiJNRU1CRVIiLCJhcHBVc2VySWQiOiIxIiwibWVtYmVySWQiOjEzOTMsInVzZXJuYW1lIjoidXNlcjEifSwiaWF0IjoxNzQxOTM0MjY5LCJleHAiOjE3NDIwMjA2Njl9.vubYk2aV9nL6pek_jAyQZksXTwWRF5C_xtU8L3ebOUI'
   );
   useEffect(() => {
     const rtc = new FFC_Controller(url, token);
@@ -102,23 +100,19 @@ export default function Home() {
   }, [url, token]);
 
   const setListVideoRooms = useCallback(() => {
-    if (rtc) {
-      // d
-
-      try {
-        rtc.api.listVideoRooms().then((data) => {
-          setRooms(data);
-        });
-      } catch (error) {
-        // noop
-        console.log(error);
-      }
+    try {
+      FlipFlopCloud.listVideoRooms().then((data) => {
+      setRooms(data);
+      });
+    } catch (error) {
+      // noop
+      console.log(error);
     }
-  }, [rtc]);
+  }, []);
 
   useEffect(() => {
     setListVideoRooms();
-  }, [rtc]);
+  }, []);
 
   return (
     <div
@@ -159,11 +153,10 @@ export default function Home() {
             <button
               key={d.id}
               onClick={async () => {
-                const test = await rtc?.api.me();
+                const test = await FlipFlopCloud.getMe();
                 if (test?.appUserId) {
-                  const data = await rtc?.api.issueVideoRoomWebRtcToken(
+                  const data = await FlipFlopCloud.issueRtcVideoRoomToken(
                     d.id,
-                    test?.appUserId
                   );
 
                   if (data) {
@@ -188,8 +181,8 @@ export default function Home() {
             /*
 
       */
-            await rtc.api.createVideoRoom({
-              type: 'VIDEO_CONFERENCE' as any
+            await FlipFlopCloud.createVideoRoom({
+              type: FFCVideoRoomType.VIDEO_CONFERENCE
             });
             await setListVideoRooms();
           }}
