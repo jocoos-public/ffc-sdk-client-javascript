@@ -4,9 +4,20 @@ import type { FFCCreateVideoRoomParams, FFCIssueRtcVideoRoomTokenParams, FFCUpda
 import type { FFCListVideoRoomsQuery } from './api/types/query';
 import { SdkNotInitializedError } from './errors';
 
+/**
+ * The `FlipFlopCloud` class provides a static interface for interacting with the FlipFlopCloud API.
+ * It includes methods for initializing the SDK, managing video rooms, and retrieving user information.
+ */
 export default class FlipFlopCloud {
   private static instance: FlipFlopCloudApi;
   
+  /**
+   * Initializes the FlipFlopCloud SDK with the provided API base URL and access tokens.
+   * 
+   * @param baseUrl - The base URL of the FlipFlopCloud API.
+   * @param accessToken - The access token for authenticating API requests.
+   * @param refreshToken - (Optional) The refresh token for renewing the access token.
+   */
   static init(baseUrl: string, accessToken: string, refreshToken?: string): void {
     if (FlipFlopCloud.instance) {
       console.warn('FlipFlopCloud instance already initialized');
@@ -14,6 +25,12 @@ export default class FlipFlopCloud {
     FlipFlopCloud.instance = new FlipFlopCloudApi(baseUrl, accessToken, refreshToken);
   }
 
+  /**
+   * Retrieves the current user's information.
+   * 
+   * @returns A promise that resolves to the current user's details as an {@link FFCMemberDto}.
+   * @throws `SdkNotInitializedError` if the SDK has not been initialized.
+   */
   static getMe(): Promise<FFCMemberDto> {
     if (!FlipFlopCloud.instance) {
       throw new SdkNotInitializedError();
@@ -23,6 +40,13 @@ export default class FlipFlopCloud {
     });
   }
 
+  /**
+   * Creates a new video room with the specified parameters.
+   * 
+   * @param params - The parameters for creating the video room.
+   * @returns A promise that resolves to the created video room details as an {@link FFCVideoRoomDto}.
+   * @throws `SdkNotInitializedError` if the SDK has not been initialized.
+   */
   static createVideoRoom(params: FFCCreateVideoRoomParams): Promise<FFCVideoRoomDto> {
     if (!FlipFlopCloud.instance) {
       throw new SdkNotInitializedError();
@@ -32,6 +56,13 @@ export default class FlipFlopCloud {
     });
   }
 
+  /**
+   * Lists video rooms based on the provided query parameters.
+   * 
+   * @param query - (Optional) The query parameters for filtering the video rooms.
+   * @returns A promise that resolves to a paginated list of video rooms as {@link FFCPagesDto<FFCVideoRoomDto>}.
+   * @throws `SdkNotInitializedError` if the SDK has not been initialized.
+   */
   static listVideoRooms(query?: FFCListVideoRoomsQuery): Promise<FFCPagesDto<FFCVideoRoomDto>> {
     if (!FlipFlopCloud.instance) {
       throw new SdkNotInitializedError();
@@ -41,6 +72,13 @@ export default class FlipFlopCloud {
     });
   }
 
+  /**
+   * Retrieves the details of a specific video room by its ID.
+   * 
+   * @param videoRoomId - The ID of the video room to retrieve.
+   * @returns A promise that resolves to the video room details as an {@link FFCVideoRoomDto}.
+   * @throws `SdkNotInitializedError` if the SDK has not been initialized.
+   */
   static getVideoRoom(videoRoomId: number): Promise<FFCVideoRoomDto> {
     if (!FlipFlopCloud.instance) {
       throw new SdkNotInitializedError();
@@ -50,6 +88,14 @@ export default class FlipFlopCloud {
     });
   }
 
+  /**
+   * Updates the details of a specific video room by its ID.
+   * 
+   * @param videoRoomId - The ID of the video room to update.
+   * @param params - The parameters for updating the video room.
+   * @returns A promise that resolves to the updated video room details as an {@link FFCVideoRoomDto}.
+   * @throws `SdkNotInitializedError` if the SDK has not been initialized.
+   */
   static updateVideoRoom(videoRoomId: number, params: FFCUpdateVideoRoomParams): Promise<FFCVideoRoomDto> {
     if (!FlipFlopCloud.instance) {
       throw new SdkNotInitializedError();
@@ -59,6 +105,13 @@ export default class FlipFlopCloud {
     });
   }
 
+  /**
+   * Deletes a specific video room by its ID.
+   * 
+   * @param videoRoomId - The ID of the video room to delete.
+   * @returns A promise that resolves when the video room is successfully deleted.
+   * @throws `SdkNotInitializedError` if the SDK has not been initialized.
+   */
   static deleteVideoRoom(videoRoomId: number): Promise<void> {
     if (!FlipFlopCloud.instance) {
       throw new SdkNotInitializedError();
@@ -66,6 +119,14 @@ export default class FlipFlopCloud {
     return this.instance.deleteVideoRoom(videoRoomId);
   }
 
+  /**
+   * Issues a WebRTC token for a specific video room.
+   * 
+   * @param videoRoomId - The ID of the video room.
+   * @param params - (Optional) Additional parameters for issuing the token.
+   * @returns A promise that resolves to the WebRTC token details as an {@link FFCRtcVideoRoomTokenDto}.
+   * @throws `SdkNotInitializedError` if the SDK has not been initialized.
+   */
   static issueRtcVideoRoomToken(videoRoomId: number, params?: FFCIssueRtcVideoRoomTokenParams): Promise<FFCRtcVideoRoomTokenDto> {
     if (!FlipFlopCloud.instance) {
       throw new SdkNotInitializedError();
@@ -94,6 +155,7 @@ export default class FlipFlopCloud {
   */
 }
 
+/** @internal */
 function toFFCNestedAppDto(res: any): FFCNestedAppDto {
   return {
     id: res.id,
@@ -101,6 +163,7 @@ function toFFCNestedAppDto(res: any): FFCNestedAppDto {
   };
 }
 
+/** @internal */
 function toFFCNestedMemberDto(res: any): FFCNestedMemberDto {
   return {
     id: res.id,
@@ -110,6 +173,7 @@ function toFFCNestedMemberDto(res: any): FFCNestedMemberDto {
   };
 }
 
+/** @internal */
 function toFFCMemberDto(res: any): FFCMemberDto {
   return {
     id: res.id,
@@ -125,6 +189,7 @@ function toFFCMemberDto(res: any): FFCMemberDto {
   };
 }
 
+/** @internal */
 function toFFCVideoRoomPolicyDto(res: any): FFCVideoRoomPolicyDto {
   return {
     hasPassword: res.hasPassword,
@@ -134,6 +199,7 @@ function toFFCVideoRoomPolicyDto(res: any): FFCVideoRoomPolicyDto {
   };
 }
 
+/** @internal */
 function toFFCVideoRoomDto(res: any): FFCVideoRoomDto {
   return {
     id: res.id,
@@ -154,6 +220,7 @@ function toFFCVideoRoomDto(res: any): FFCVideoRoomDto {
   };
 }
 
+/** @internal */
 function toFFCPages<T>(res: FFCPagesDto<any>, converter: Function): FFCPagesDto<T> {
   return {
     content: res.content.map((item) => converter(item)),

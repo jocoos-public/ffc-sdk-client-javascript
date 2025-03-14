@@ -64,12 +64,19 @@ export namespace FFCConnectionState {
   }
 }
 
+/**
+ * The `FFCRtcVideoRoom` class provides an interface for managing and interacting with a WebRTC video room.
+ * It extends `EventEmitter` to emit various events related to room state, participants, tracks, and more.
+ */
 export default class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEventEmitter<FFCRtcVideoRoomEventCallbacks>) {
   private _room: Room;
 
-  //constructor(room: Room);
+  /**
+   * Creates an instance of `FFCRtcVideoRoom`.
+   * 
+   * @param opts - Optional configuration options for the video room.
+   */
   constructor(opts?: FFCRtcVideoRoomOptions) {
-  //constructor(opts?: FFCRtcVideoRoomOptions | Room) {
     super();
     if (opts instanceof Room) {
       this._room = opts;
@@ -126,10 +133,20 @@ export default class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEve
     return this._room;
   }
 
+  /**
+   * Gets the current connection state of the room.
+   * 
+   * @returns The connection state as an `FFCConnectionState`.
+   */
   get state(): FFCConnectionState {
     return FFCConnectionState.fromConnectionState(this._room.state);
   }
 
+  /**
+   * Gets the remote participants in the room.
+   * 
+   * @returns A map of participant IDs to `FFCRemoteParticipant` instances.
+   */
   get remoteParticipants(): Map<string, FFCRemoteParticipant> {
     const ffcMap = new Map<string, FFCRemoteParticipant>();
     this._room.remoteParticipants.forEach((value, key) => {
@@ -138,10 +155,20 @@ export default class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEve
     return ffcMap;
   }
 
+  /**
+   * Gets the active speakers in the room.
+   * 
+   * @returns An array of `FFCParticipant` instances representing the active speakers.
+   */
   get activeSpeakers(): Array<FFCParticipant> {
     return this._room.activeSpeakers.map((participant) => wrapParticipant(participant));
   }
 
+  /**
+   * Gets the local participant in the room.
+   * 
+   * @returns The local participant as an `FFCLocalParticipant`.
+   */
   get localParticipant(): FFCLocalParticipant {
     return wrapParticipant(this._room.localParticipant) as FFCLocalParticipant;
   }
@@ -151,10 +178,20 @@ export default class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEve
     return this._room.engine;
   }
 
+  /**
+   * Checks if end-to-end encryption (E2EE) is enabled.
+   * 
+   * @returns `true` if E2EE is enabled, otherwise `false`.
+   */
   get isE2EEEnabled(): boolean {
     return false;
   }
 
+  /**
+   * Gets the options used to configure the room.
+   * 
+   * @returns The room options as `FFCInternalRtcVideoRoomOptions`.
+   */
   get options(): FFCInternalRtcVideoRoomOptions {
     return FFCRtcVideoRoomOptions.fromRoomOptions(this._room.options) as FFCInternalRtcVideoRoomOptions;
   }
@@ -165,56 +202,132 @@ export default class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEve
   }
   */
 
+  /**
+   * Checks if the room is currently recording.
+   * 
+   * @returns `true` if the room is recording, otherwise `false`.
+   */
   get isRecording(): boolean {
     return this._room.isRecording;
   }
 
+  /**
+   * Gets the name of the room.
+   * 
+   * @returns The name of the room.
+   */
   get name(): string {
     return this._room.name;
   }
 
+  /**
+   * Gets the metadata associated with the room.
+   * 
+   * @returns The room metadata as a string, or `undefined` if not set.
+   */
   get metadata(): string | undefined {
     return this._room.metadata;
   }
 
+  /**
+   * Gets the number of participants in the room.
+   * 
+   * @returns The number of participants.
+   */
   get numParticipants(): number {
     return this._room.numParticipants;
   }
 
+  /**
+   * Gets the number of publishers in the room.
+   * 
+   * @returns The number of publishers.
+   */
   get numPublishers(): number {
     return this._room.numPublishers;
   }
 
+  /**
+   * Checks if audio playback is allowed in the room.
+   * 
+   * @returns `true` if audio playback is allowed, otherwise `false`.
+   */
   get canPlaybackAudio(): boolean {
     return this._room.canPlaybackAudio;
   }
 
+  /**
+   * Checks if video playback is allowed in the room.
+   * 
+   * @returns `true` if video playback is allowed, otherwise `false`.
+   */
   get canPlaybackVideo(): boolean {
     return this._room.canPlaybackVideo;
   }
 
+  /**
+   * Gets the room's SID (Session Identifier).
+   * 
+   * @returns A promise that resolves to the room's SID.
+   */
   async getSid(): Promise<string> {
     return this._room.getSid();
   }
 
+  /**
+   * Retrieves the local media devices available on the system.
+   * 
+   * @param kind - The type of media device({@link https://developer.mozilla.org/en-US/docs/Web/API/MediaDeviceInfo/kind}) to retrieve (e.g., "audioinput").
+   * @param requestPermissions - Whether to request permissions for the devices.
+   * @returns A promise that resolves to an array of `MediaDeviceInfo` objects.
+   */
   static getLocalDevices(kind?: MediaDeviceKind, requestPermissions: boolean = true): Promise<MediaDeviceInfo[]> {
     return Room.getLocalDevices(kind, requestPermissions);
   }
 
+  /**
+   * Gets the active device for a specific media kind.
+   * 
+   * @param kind - The type of media device (e.g., "audioinput").
+   * @returns The device ID of the active device, or `undefined` if not set.
+   */
   getActiveDevice(kind: MediaDeviceKind): string | undefined {
     return this._room.getActiveDevice(kind);
   }
 
+  /**
+   * Switches the active device for a specific media kind.
+   * 
+   * @param kind - The type of media device (e.g., "audioinput").
+   * @param deviceId - The ID of the device to switch to.
+   * @param exact - Whether to match the device ID exactly.
+   * @returns A promise that resolves to `true` if the device was switched successfully, otherwise `false`.
+   */
   async switchActiveDevice(kind: MediaDeviceKind, deviceId: string, exact: boolean = false): Promise<boolean> {
     return this._room.switchActiveDevice(kind, deviceId, exact);
   }
 
   //static cleanupRegistry
 
+  /**
+   * Prepares the connection to the room.
+   * 
+   * @param url - The URL of the room's signaling server.
+   * @param token - The token for authenticating the connection.
+   * @returns A promise that resolves when the connection is prepared.
+   */
   async prepareConnection(url: string, token?: string): Promise<void> {
     await this._room.prepareConnection(url, token);
   }
 
+  /**
+   * Connects to the room.
+   * 
+   * @param url - The URL of the room's signaling server.
+   * @param token - The token for authenticating the connection.
+   * @param opts - Optional connection options.
+   * @returns A promise that resolves when the connection is established.
+   */
   async connect(url: string, token: string, opts?: FFCRtcVideoRoomConnectOptions): Promise<void> {
     if (!isFFCTrackModuleInitialized()) {
       await initFFCTrackModule();
@@ -222,10 +335,22 @@ export default class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEve
     await this._room.connect(url, token, opts);
   }
 
+  /**
+   * Disconnects from the room.
+   * 
+   * @param stopTracks - Whether to stop all tracks when disconnecting.
+   * @returns A promise that resolves when the disconnection is complete.
+   */
   async disconnect(stopTracks: boolean = true) {
     return this._room.disconnect(stopTracks);
   }
 
+  /**
+   * Gets a participant by their identity.
+   * 
+   * @param identity - The identity of the participant.
+   * @returns The participant as an `FFCParticipant`, or `undefined` if not found.
+   */
   getParticipantByIdentity(idenity: string): FFCParticipant | undefined {
     const participant = this._room.getParticipantByIdentity(idenity);
     if (participant) {
@@ -233,10 +358,20 @@ export default class FFCRtcVideoRoom extends (EventEmitter as new () => TypedEve
     }
   }
 
+  /**
+   * Starts audio playback in the room.
+   * 
+   * @returns A promise that resolves when audio playback starts.
+   */
   startAudio() {
     return this._room.startAudio();
   }
 
+  /**
+   * Starts video playback in the room.
+   * 
+   * @returns A promise that resolves when video playback starts.
+   */
   startVideo() {
     return this._room.startVideo();
   }

@@ -40,6 +40,7 @@ export interface FFCTrackProcessor<T extends FFCTrack.Kind, U extends FFCProcess
 
 /** @internal */
 export namespace FFCTrackProcessor {
+  /** @internal */
   export function fromTrackProcessor<T extends FFCTrack.Kind>(processor: TrackProcessor<FFCTrack.MapToTrackKind<T>>): FFCTrackProcessor<T> {
     return {
       name: processor.name,
@@ -72,6 +73,7 @@ export namespace FFCTrackProcessor {
     };
   }
 
+  /** @internal */
   export function toTrackProcessor<FFCTrackKind extends FFCTrack.Kind>(
     ffcProcessor: FFCTrackProcessor<FFCTrackKind>
   ): TrackProcessor<FFCTrack.MapToTrackKind<FFCTrackKind>> {
@@ -107,11 +109,14 @@ export namespace FFCTrackProcessor {
 
 export interface FFCAudioTrackProcessor extends FFCTrackProcessor<FFCTrack.Kind.Audio, FFCAudioProcessorOptions> {}
 
+/** @internal */
 export namespace FFCAudioTrackProcessor {
+  /** @internal */
   export function fromTrackProcessor(processor: TrackProcessor<Track.Kind.Audio, AudioProcessorOptions>): FFCAudioTrackProcessor {
     return FFCAudioTrackProcessor.fromTrackProcessor(processor);
   }
 
+  /** @internal */
   export function toTrackProcessor(processor: FFCAudioTrackProcessor): TrackProcessor<Track.Kind.Audio, AudioProcessorOptions> {
     return FFCAudioTrackProcessor.toTrackProcessor(processor);
   }
@@ -119,11 +124,14 @@ export namespace FFCAudioTrackProcessor {
 
 export interface FFCVideoTrackProcessor extends FFCTrackProcessor<FFCTrack.Kind.Video, FFCVideoProcessorOptions> {}
 
+/** @internal */
 export namespace FFCVideoTrackProcessor {
+  /** @internal */
   export function fromTrackProcessor(processor: TrackProcessor<FFCTrack.MapToTrackKind<FFCTrack.Kind.Video>>): FFCVideoTrackProcessor {
     return FFCVideoTrackProcessor.fromTrackProcessor(processor);
   }
 
+  /** @internal */
   export function toTrackProcessor(processor: FFCVideoTrackProcessor): TrackProcessor<FFCTrack.MapToTrackKind<FFCTrack.Kind.Video>> {
     return FFCVideoTrackProcessor.toTrackProcessor(processor);
   }

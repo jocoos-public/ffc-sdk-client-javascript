@@ -3,6 +3,7 @@ import { FFCAudioCaptureOptions, FFCTrackPublishDefaults, FFCVideoCaptureOptions
 import type { FFCAdaptiveStreamSettings } from "./track/types";
 import type { FFCReconnectPolicy } from "./reconnect-policy";
 
+/** @internal */
 export interface FFCInternalRtcVideoRoomOptions {
   adaptiveStream: FFCAdaptiveStreamSettings | boolean;
   dynacast: boolean;
@@ -112,6 +113,7 @@ export namespace FFCRtcVideoRoomOptions {
   }
 }
 
+/** @internal */
 export interface FFCInternalRtcVideoRoomConnectOptions extends InternalRoomConnectOptions {}
 
 export interface FFCRtcVideoRoomConnectOptions extends Partial<FFCInternalRtcVideoRoomConnectOptions> {}

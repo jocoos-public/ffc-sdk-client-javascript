@@ -28,7 +28,7 @@
     "excludeProtected": true,
     "excludeExternals": true,
     "includeVersion": true,
-    "name": "LiveKit JS Client SDK",
+    "name": "FlipFlop Cloud JavaScript Client SDK",
     "out": "docs",
     "theme": "default"
   }

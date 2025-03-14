@@ -259,14 +259,14 @@ export enum FFCRtcVideoRoomEvent {
   TRACK_SUBSCRIPTION_STATUS_CHANGED = 'TRACK_SUBSCRIPTION_STATUS_CHANGED',
 
   /**
-   * LiveKit will attempt to autoplay all audio tracks when you attach them to
+   * Attempt to autoplay all audio tracks will be made when you attach them to
    * audio elements. However, if that fails, we'll notify you via AudioPlaybackStatusChanged.
    * `Room.canPlaybackAudio` will indicate if audio playback is permitted.
    */
   AUDIO_PLAYBACK_STATUS_CHANGED = 'AUDIO_PLAYBACK_STATUS_CHANGED',
 
   /**
-   * LiveKit will attempt to autoplay all video tracks when you attach them to
+   * Attempt to autoplay all video tracks will be made when you attach them to
    * a video element. However, if that fails, we'll notify you via VideoPlaybackStatusChanged.
    * Calling `room.startVideo()` in a user gesture event handler will resume the video playback.
    */

@@ -13,8 +13,12 @@ import { wrapTrack } from "../wrapper-track";
 import { FFCTrackPublicationEvent } from "../events";
 import type { UpdateSubscription, UpdateTrackSettings } from "@livekit/protocol";
 
+/**
+ * The `FFCTrackPublication` class represents a published media track in the FlipFlopCloud SDK.
+ * It provides access to track metadata, subscription status, and related events.
+ */
 export abstract class FFCTrackPublication extends (EventEmitter as new () => TypedEventEmitter<FFCPublicationEventCallbacks>) implements IFFCTrackPublication {
-  protected _trackPublication: TrackPublication;
+    protected _trackPublication: TrackPublication;
 
   /** @internal */
   constructor(trackPublication: TrackPublication) {
@@ -82,10 +86,20 @@ export abstract class FFCTrackPublication extends (EventEmitter as new () => Typ
     return this._trackPublication;
   }
 
+  /**
+   * Gets the kind of the track (e.g., audio, video).
+   * 
+   * @returns The track kind as `FFCTrack.Kind`.
+   */
   get kind(): FFCTrack.Kind {
     return FFCTrack.fromTrackKind(this._trackPublication.kind);
   }
 
+  /**
+   * Gets the name of the track.
+   * 
+   * @returns The track name as a string.
+   */
   get trackName(): string {
     return this._trackPublication.trackName;
   }
@@ -100,6 +114,11 @@ export abstract class FFCTrackPublication extends (EventEmitter as new () => Typ
     return this._trackPublication.trackSid;
   }
 
+  /**
+   * Gets the associated track instance.
+   * 
+   * @returns The track as an `FFCTrack` instance, or `undefined` if not available.
+   */
   get track(): FFCTrack | undefined{
     if (!this._trackPublication.track) {
       return;
@@ -107,22 +126,47 @@ export abstract class FFCTrackPublication extends (EventEmitter as new () => Typ
     return wrapTrack(this._trackPublication.track);
   }
 
+  /**
+   * Gets the source of the track (e.g., camera, microphone).
+   * 
+   * @returns The track source as `FFCTrack.Source`.
+   */
   get source(): FFCTrack.Source {
     return FFCTrack.fromTrackSource(this._trackPublication.source);
   }
 
+  /**
+   * Gets the MIME type of the track.
+   * 
+   * @returns The MIME type as a string, or `undefined` if not available.
+   */
   get mimeType(): string | undefined{
     return this._trackPublication.mimeType;
   }
 
+  /**
+   * Gets the dimensions of the track (e.g., width and height).
+   * 
+   * @returns The dimensions as `FFCTrack.Dimensions`, or `undefined` if not available.
+   */
   get dimensions(): FFCTrack.Dimensions | undefined{
     return this._trackPublication.dimensions;
   }
 
+  /**
+   * Indicates whether the track is simulcast.
+   * 
+   * @returns `true` if the track is simulcast, otherwise `false`.
+   */
   get simulcasted(): boolean | undefined {
     return this._trackPublication.simulcasted;
   }
 
+  /**
+   * Gets the track information.
+   * 
+   * @returns The track information as `FFCTrackInfo`, or `undefined` if not available.
+   */
   get trackInfo(): FFCTrackInfo | undefined {
     const trackInfo = this._trackPublication.trackInfo;
     if (trackInfo) {
@@ -135,30 +179,66 @@ export abstract class FFCTrackPublication extends (EventEmitter as new () => Typ
     this._trackPublication.setTrack(track?.instance);
   }
 
+  /**
+   * Indicates whether the track is muted.
+   * 
+   * @returns `true` if the track is muted, otherwise `false`.
+   */
   get isMuted(): boolean {
     return this._trackPublication.isMuted;
   }
 
+  /**
+   * Indicates whether the track is enabled.
+   * 
+   * @returns `true` if the track is enabled, otherwise `false`.
+   */
   get isEnabled(): boolean {
     return this._trackPublication.isEnabled;
   }
 
+  /**
+   * Indicates whether the track is subscribed.
+   * 
+   * @returns `true` if the track is subscribed, otherwise `false`.
+   */
   get isSubscribed(): boolean {
     return this._trackPublication.isSubscribed;
   }
 
+  /**
+   * Indicates whether the track is encrypted.
+   * 
+   * @returns `true` if the track is encrypted, otherwise `false`.
+   */
   get isEncrypted(): boolean {
     return this._trackPublication.isEncrypted;
   }
 
+  /**
+   * Indicates whether the track is local.
+   * 
+   * @abstract
+   * @returns `true` if the track is local, otherwise `false`.
+   */
   abstract get isLocal(): boolean;
 
+  /**
+   * Gets the associated audio track.
+   * 
+   * @returns The audio track as `FFCLocalAudioTrack` or `FFCRemoteAudioTrack`, or `undefined` if not available.
+   */
   get audioTrack(): FFCLocalAudioTrack | FFCRemoteAudioTrack | undefined {
     if (this._trackPublication.track) {
       return wrapTrack(this._trackPublication.track) as FFCLocalAudioTrack | FFCRemoteAudioTrack;
     }
   }
 
+  /**
+   * Gets the associated video track.
+   * 
+   * @returns The video track as `FFCLocalVideoTrack` or `FFCRemoteVideoTrack`, or `undefined` if not available.
+   */
   get videoTrack(): FFCLocalVideoTrack | FFCRemoteVideoTrack | undefined {
     if (this._trackPublication.track) {
       return wrapTrack(this._trackPublication.track) as FFCLocalVideoTrack | FFCRemoteVideoTrack;
