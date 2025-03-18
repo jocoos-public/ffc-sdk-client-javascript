@@ -37,6 +37,7 @@ export class FFCTrackInvalidError extends FFCError {
   }
 }
 
+/** @internal */
 export enum FFCMediaDeviceFailure {
   // user rejected permissions
   PermissionDenied = 'PermissionDenied',
@@ -63,6 +64,7 @@ export namespace FFCMediaDeviceFailure {
     }
   }
 
+  /** @internal */
   export function fromMediaDeviceFailure(failure: MediaDeviceFailure): FFCMediaDeviceFailure {
     switch (failure) {
       case MediaDeviceFailure.PermissionDenied:
@@ -76,6 +78,7 @@ export namespace FFCMediaDeviceFailure {
     }
   }
 
+  /** @internal */
   export function toMediaDeviceFailure(failure: FFCMediaDeviceFailure): MediaDeviceFailure {
     switch (failure) {
       case FFCMediaDeviceFailure.PermissionDenied:

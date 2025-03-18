@@ -14,6 +14,10 @@ export function kebabCaseToPascalCase(string = '') {
   );
 }
 
+function removeScopeInPackageName(name) {
+  return name.replace(/^@.*\//, '');
+}
+
 /**
  * @type {import('rollup').InputPluginOption}
  */
@@ -37,17 +41,17 @@ export default {
   input: 'src/index.ts',
   output: [
     {
-      file: `dist/${packageJson.name}.esm.mjs`,
+      file: `dist/${removeScopeInPackageName(packageJson.name)}.esm.mjs`,
       format: 'es',
       strict: true,
       sourcemap: true,
     },
     {
-      file: `dist/${packageJson.name}.umd.js`,
+      file: `dist/${removeScopeInPackageName(packageJson.name)}.umd.js`,
       format: 'umd',
       strict: true,
       sourcemap: true,
-      name: kebabCaseToPascalCase(packageJson.name),
+      name: kebabCaseToPascalCase(removeScopeInPackageName(packageJson.name)),
       plugins: [terser()],
     },
   ],

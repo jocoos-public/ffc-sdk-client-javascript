@@ -4,6 +4,7 @@ import { FFCTrack } from "./track/track";
 import { DisconnectReason, ParticipantKind } from "livekit-client";
 import { FFCBackupCodecPolicy } from "./track/options";
 
+/** @internal  */
 export enum FFCDisconnectReason {
   UNKNOWN_REASON = 'UNKNOWN_REASON',
   CLIENT_INITIATED = 'CLIENT_INITIATED',
@@ -23,6 +24,7 @@ export enum FFCDisconnectReason {
 
 /** @internal  */
 export namespace FFCDisconnectReason {
+  /** @internal  */
   export function fromDisconnectReason(reason: DisconnectReason | undefined): FFCDisconnectReason | undefined {
     if (reason === undefined) {
       return;
@@ -159,7 +161,9 @@ export enum FFCSubscriptionError {
   TRACK_NOTFOUND = 'TRACK_NOTFOUND',
 }
 
+/** @internal */
 export namespace FFCSubscriptionError {
+  /** @internal */
   export function fromSubscriptionError(error: SubscriptionError): FFCSubscriptionError {
     switch (error) {
       case SubscriptionError.SE_UNKNOWN:

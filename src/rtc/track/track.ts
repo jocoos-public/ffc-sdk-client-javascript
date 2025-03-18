@@ -6,6 +6,12 @@ import { TrackSource } from "@livekit/protocol";
 import { wrapTrack } from "../wrapper-track";
 import { FFCTrackEvent } from "../events";
 
+/**
+ * The `FFCTrack` class is an abstract base class for handling media tracks in the FlipFlopCloud SDK.
+ * It extends `EventEmitter` to emit various events related to track state changes.
+ * 
+ * @template TrackKind - The type of the track, which defaults to `FFCTrack.Kind`.
+ */
 export abstract class FFCTrack<TrackKind extends FFCTrack.Kind = FFCTrack.Kind>
   extends (EventEmitter as new () => TypedEventEmitter<FFCTrackEventCallbacks>)
   implements IFFCTrack<TrackKind> {
@@ -51,22 +57,47 @@ export abstract class FFCTrack<TrackKind extends FFCTrack.Kind = FFCTrack.Kind>
     return this._track;
   }
 
+  /**
+   * Gets the kind of the track (e.g., audio, video).
+   * 
+   * @returns The track kind as `TrackKind`.
+   */
   get kind(): TrackKind {
     return FFCTrack.fromTrackKind(this._track.kind) as TrackKind;
   }
 
+  /**
+   * Gets the HTML media elements attached to the track.
+   * 
+   * @returns An array of `HTMLMediaElement` instances.
+   */
   get attachedElements(): Array<HTMLMediaElement> {
     return this._track.attachedElements;
   }
 
+  /**
+   * Checks if the track is muted.
+   * 
+   * @returns `true` if the track is muted, otherwise `false`.
+   */
   get isMuted(): boolean {
     return this._track.isMuted;
   }
 
+  /**
+   * Gets the source of the track (e.g., camera, microphone).
+   * 
+   * @returns The track source as `FFCTrack.Source`.
+   */
   get source(): FFCTrack.Source {
     return FFCTrack.fromTrackSource(this._track.source);
   }
 
+  /**
+   * Gets the streamd id (SID) of the track.
+   * 
+   * @returns The track SID, or `undefined` if not set.
+   */
   get sid(): string | undefined {
     return this._track.sid;
   }
@@ -76,6 +107,11 @@ export abstract class FFCTrack<TrackKind extends FFCTrack.Kind = FFCTrack.Kind>
     return this._track.mediaStream;
   }
 
+  /**
+   * Gets the stream state of the track (e.g., active, paused).
+   * 
+   * @returns The stream state as `FFCTrack.StreamState`.
+   */
   get streamState(): FFCTrack.StreamState {
     return FFCTrack.fromTrackStreamState(this._track.streamState);
   }
@@ -85,14 +121,30 @@ export abstract class FFCTrack<TrackKind extends FFCTrack.Kind = FFCTrack.Kind>
     return this._track.rtpTimestamp;
   }
 
+  /**
+   * Gets the current bitrate of the track.
+   * 
+   * @returns The current bitrate in bits per second.
+   */
   get currentBitrate(): number {
     return this._track.currentBitrate;
   }
 
+  /**
+   * Gets the `MediaStreamTrack` associated with the track.
+   * 
+   * @returns The `MediaStreamTrack` instance.
+   */
   get mediaStreamTrack(): MediaStreamTrack {
     return this._track.mediaStreamTrack;
   }
 
+  /**
+   * Checks if the track is local.
+   * 
+   * @abstract
+   * @returns `true` if the track is local, otherwise `false`.
+   */
   abstract get isLocal(): boolean;
 
   /** @internal */
@@ -100,7 +152,18 @@ export abstract class FFCTrack<TrackKind extends FFCTrack.Kind = FFCTrack.Kind>
     return this._track.mediaStreamID;
   }
 
+  /**
+   * Creates a new HTMLAudioElement or HTMLVideoElement, attaches to it, and returns it.
+   * 
+   * @returns The attached `HTMLMediaElement`.
+   */
   attach(): HTMLMediaElement;
+  /**
+   * Attaches track to an existing HTMLAudioElement or HTMLVideoElement
+   * 
+   * @param element - (Optional) The `HTMLMediaElement` to attach the track to.
+   * @returns The attached `HTMLMediaElement`.
+   */
   attach(element: HTMLMediaElement): HTMLMediaElement;
   attach(element?: HTMLMediaElement): HTMLMediaElement {
     if (element === undefined) {
@@ -109,7 +172,19 @@ export abstract class FFCTrack<TrackKind extends FFCTrack.Kind = FFCTrack.Kind>
     return this._track.attach(element);
   }
 
+  /**
+   * Detaches from all attached elements
+   * 
+   * @param element - (Optional) The `HTMLMediaElement` to detach the track from.
+   * @returns The detached `HTMLMediaElement` or an array of detached elements.
+   */
   detach(): HTMLMediaElement[];
+  /**
+   * Detach from a single element.
+   * 
+   * @param element - (Optional) The `HTMLMediaElement` to detach the track from.
+   * @returns The detached `HTMLMediaElement` or an array of detached elements.
+   */
   detach(element: HTMLMediaElement): HTMLMediaElement;
   detach(element?: HTMLMediaElement): HTMLMediaElement | Array<HTMLMediaElement> {
     if (element === undefined) {
@@ -118,18 +193,25 @@ export abstract class FFCTrack<TrackKind extends FFCTrack.Kind = FFCTrack.Kind>
     return this._track.detach(element);
   }
 
+  /**
+   * Stops the track.
+   */
   stop(): void {
     this._track.stop();
   }
 }
 
 export namespace FFCTrack {
+  /**
+   * Enum representing the kinds of tracks (e.g., audio, video).
+   */
   export enum Kind {
     Audio = "audio",
     Video = "video",
     Unknown = "unknown",
   }
 
+  /** @internal */
   export type MapToTrackKind<T extends FFCTrack.Kind> =
   T extends FFCTrack.Kind.Audio
   ? Track.Kind.Audio
@@ -137,6 +219,7 @@ export namespace FFCTrack {
   ? Track.Kind.Video
   : Track.Kind.Unknown;
 
+  /** @internal */
   export type MapToFFCTrackKind<T extends Track.Kind> =
   T extends Track.Kind.Audio
   ? FFCTrack.Kind.Audio
@@ -144,6 +227,7 @@ export namespace FFCTrack {
   ? FFCTrack.Kind.Video
   : FFCTrack.Kind.Unknown;
 
+  /** @internal */
   export function fromTrackKind(kind: Track.Kind): Kind {
     switch (kind) {
       case Track.Kind.Audio:
@@ -155,6 +239,7 @@ export namespace FFCTrack {
     }
   }
 
+  /** @internal */
   export function fromTrackKindAudio(kind: Track.Kind.Audio): Kind.Audio {
     if (kind !== Track.Kind.Audio) {
       throw new Error(`expected audio track, got ${kind}`);
@@ -162,6 +247,7 @@ export namespace FFCTrack {
     return FFCTrack.Kind.Audio;
   }
 
+  /** @internal */
   export function fromTrackKindVideo(kind: Track.Kind.Video): Kind.Video {
     if (kind !== Track.Kind.Video) {
       throw new Error(`expected video track, got ${kind}`);
@@ -169,6 +255,7 @@ export namespace FFCTrack {
     return FFCTrack.Kind.Video;
   }
 
+  /** @internal */
   export function toTrackKind(kind: Kind): Track.Kind {
     switch (kind) {
       case FFCTrack.Kind.Audio:
@@ -180,6 +267,7 @@ export namespace FFCTrack {
     }
   }
 
+  /** @internal */
   export function toTrackKindAudio(kind: Kind): Track.Kind.Audio {
     if (kind !== FFCTrack.Kind.Audio) {
       throw new Error(`expected audio track, got ${kind}`);
@@ -187,6 +275,7 @@ export namespace FFCTrack {
     return Track.Kind.Audio;
   }
 
+  /** @internal */
   export function toTrackKindVideo(kind: Kind): Track.Kind.Video {
     if (kind !== FFCTrack.Kind.Video) {
       throw new Error(`expected video track, got ${kind}`);
@@ -194,8 +283,14 @@ export namespace FFCTrack {
     return Track.Kind.Video;
   }
 
+  /**
+   * The stream id of the media track
+   */
   export type SID = Track.SID;
 
+  /**
+   * Enum representing the sources of tracks (e.g., camera, microphone).
+   */
   export enum Source {
     Camera = 'camera',
     Microphone = 'microphone',
@@ -204,6 +299,7 @@ export namespace FFCTrack {
     Unknown = 'unknown',
   }
 
+  /** @internal */
   export function fromTrackSource(source: Track.Source | TrackSource): Source {
     switch (source) {
       case TrackSource.CAMERA:
@@ -222,8 +318,11 @@ export namespace FFCTrack {
         return FFCTrack.Source.Unknown;
     }
   }
+  /** @internal */
   export function toTrackSource(source: Source.Microphone | Source.ScreenShareAudio): Track.Source.Microphone | Track.Source.ScreenShareAudio;
+  /** @internal */
   export function toTrackSource(source: Source): Track.Source;
+  /** @internal */
   export function toTrackSource(source: Source): Track.Source {
     switch (source) {
       case FFCTrack.Source.Camera:
@@ -239,12 +338,16 @@ export namespace FFCTrack {
     }
   }
 
+  /**
+   * Enum representing the stream states of tracks (e.g., active, paused).
+   */
   export enum StreamState {
     Active = 'active',
     Paused = 'paused',
     Unknown = 'unknown',
   }
 
+  /** @internal */
   export function fromTrackStreamState(state: Track.StreamState): StreamState {
     switch (state) {
       case Track.StreamState.Active:
@@ -255,6 +358,8 @@ export namespace FFCTrack {
         return FFCTrack.StreamState.Unknown;
     }
   }
+
+  /** @internal */
   export function toTrackStreamState(state: StreamState): Track.StreamState {
     switch (state) {
       case FFCTrack.StreamState.Active:
@@ -266,7 +371,20 @@ export namespace FFCTrack {
     }
   }
 
-  export interface Dimensions extends Track.Dimensions {}
+  /**
+   * Interface representing the dimensions of a track.
+   */
+  export interface Dimensions extends Track.Dimensions {
+  /**
+   * The width of the media track resolution.
+   */
+    width: number;
+
+  /**
+   * The height of the media track in pixels.
+   */
+    height: number;
+  }
 }
 
 export type FFCTrackEventCallbacks = {

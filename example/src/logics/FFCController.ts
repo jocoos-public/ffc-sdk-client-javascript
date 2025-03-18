@@ -1,20 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import {
-//   LocalAudioTrack,
-//   LocalParticipant,
-//   LocalTrackPublication,
-//   LocalVideoTrack,
-//   ParticipantEvent,
-//   RemoteAudioTrack,
-//   RemoteParticipant,
-//   RemoteTrackPublication,
-//   RemoteVideoTrack,
-//   Room,
-//   RoomEvent,
-//   Track,
-// } from "livekit-client";
-
 import {
   FFCLocalAudioTrack,
   FFCLocalParticipant,
@@ -198,7 +182,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
 
     remote.participant.on(
       FFCParticipantEvent.TRACK_SUBSCRIBED,
-      (track, publication) => {
+      (track) => {
         if (track instanceof FFCRemoteAudioTrack) {
           if (track.source === FFCTrack.Source.Microphone) {
             remote.microphone!.track = track;
@@ -217,7 +201,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
 
     remote.participant.on(
       FFCParticipantEvent.TRACK_UNSUBSCRIBED,
-      (track, publication) => {
+      (track) => {
         if (track instanceof FFCRemoteAudioTrack) {
           if (track.source === FFCTrack.Source.Microphone) {
             remote.microphone!.track = track;
@@ -573,7 +557,7 @@ export class FFC_Controller extends EventHandler<RtcEventPayloads> {
       // this.context!.setStatus("LOADED");
     });
 
-    room.addListener(FFCRtcVideoRoomEvent.DISCONNECTED, (reason) => {
+    room.addListener(FFCRtcVideoRoomEvent.DISCONNECTED, () => {
       this.context!.local = {
         camera: {
           muted: false,

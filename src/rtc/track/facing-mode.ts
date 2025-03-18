@@ -31,7 +31,6 @@ type FacingModeFromLocalTrackReturnValue = {
  * If both methods fail, the default facing mode will be used.
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints/facingMode | MDN docs on facingMode}
- * @experimental
  */
 export function facingModeFromLocalTrack(
   localTrack: FFCLocalTrack | MediaStreamTrack,
@@ -74,8 +73,6 @@ const knownDeviceLabelSections = new Map<string, FacingModeFromLocalTrackReturnV
 ]);
 /**
  * Attempt to analyze the device label to determine the facing mode.
- *
- * @experimental
  */
 export function facingModeFromDeviceLabel(
   deviceLabel: string,

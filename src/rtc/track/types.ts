@@ -10,15 +10,21 @@ export type FFCAudioTrack = FFCRemoteAudioTrack | FFCLocalAudioTrack;
 export type FFCVideoTrack = FFCRemoteVideoTrack | FFCLocalVideoTrack;
 
 export enum FFCVideoQuality {
-  LOW = VideoQuality.LOW,
-  MEDIUM = VideoQuality.MEDIUM,
-  HIGH = VideoQuality.HIGH,
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
   //OFF = VideoQuality.OFF,
 }
 
+/** @internal */
 export namespace FFCVideoQuality {
+  /** @internal */
   export function fromVideoQuality(quality: VideoQuality): FFCVideoQuality;
+
+  /** @internal */
   export function fromVideoQuality(quality: VQ): FFCVideoQuality
+
+  /** @internal */
   export function fromVideoQuality(quality: VideoQuality | VQ): FFCVideoQuality {
     switch (quality) {
       case VQ.LOW:
@@ -35,7 +41,8 @@ export namespace FFCVideoQuality {
     }
   }
 
-  export function toVideoQuality(quality: FFCVideoQuality): VideoQuality{
+  /** @internal */
+  export function toVideoQuality(quality: FFCVideoQuality): VideoQuality {
     switch (quality) {
       case FFCVideoQuality.LOW:
         return VideoQuality.LOW;
@@ -49,8 +56,8 @@ export namespace FFCVideoQuality {
   }
 }
 
-export interface FFCElementInfo extends ElementInfo {}
+export interface FFCElementInfo extends ElementInfo { }
 
 export type FFCAdaptiveStreamSettings = AdaptiveStreamSettings;
 
-export interface FFCReplaceTrackOptions extends ReplaceTrackOptions {}
+export interface FFCReplaceTrackOptions extends ReplaceTrackOptions { }

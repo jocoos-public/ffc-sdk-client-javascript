@@ -1,6 +1,7 @@
 {
-  "name": "ffc-sdk-client-javascript",
-  "version": "2.9.1",
+  "name": "@jocoos/ffc-sdk-client-javascript",
+  "private": false,
+  "version": "1.0.4",
   "main": "./dist/ffc-sdk-client-javascript.umd.js",
   "unpkg": "./dist/ffc-sdk-client-javascript.umd.js",
   "module": "./dist/ffc-sdk-client-javascript.esm.mjs",
@@ -22,10 +23,12 @@
     "downlevel-dts": "downlevel-dts ./dist/ ./dist/ts4.2 --to=4.2",
     "lint": "eslint src --fix",
     "format": "prettier --write src examples/**/*.ts",
-    "format:check": "prettier --check src examples/**/*.ts"
+    "format:check": "prettier --check src examples/**/*.ts",
+    "docs": "typedoc src/index.ts && aws s3 cp docs s3://jocoos-public/docs/ffc-sdk-client-javascript/ --recursive --acl public-read"
   },
   "keywords": [],
-  "author": "",
+  "repository": "git@github.com:jocoos-public/ffc-sdk-client-javascript.git",
+  "author": "jocoos",
   "license": "ISC",
   "type": "commonjs",
   "description": "",
@@ -42,7 +45,6 @@
     "@typescript-eslint/parser": "^7.0.0",
     "copyfiles": "^2.4.1",
     "downlevel-dts": "^0.11.0",
-    "dpdm": "^3.14.0",
     "eslint": "8.57.1",
     "eslint-config-airbnb-typescript": "18.0.0",
     "eslint-config-prettier": "9.1.0",
@@ -53,6 +55,7 @@
     "rollup": "^4.34.9",
     "rollup-plugin-delete": "^2.1.0",
     "rollup-plugin-typescript2": "0.36.0",
+    "typedoc": "^0.27.9",
     "typescript": "^5.8.2"
   },
   "dependencies": {

@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/media-has-caption */
 import {
   ElementRef,
   forwardRef,
@@ -8,7 +7,6 @@ import {
   VideoHTMLAttributes
 } from 'react';
 
-// import { facingModeFromLocalTrack, Track, VideoTrack } from "livekit-client";
 import { useCombinedRefs } from './useCombinedRefs';
 
 import {
@@ -16,10 +14,9 @@ import {
   FFCVideoTrack,
   facingModeFromLocalTrack
 } from 'ffc-sdk-client-javascript';
-import { VideoTrack } from 'livekit-client';
 
 export type VideoTrackProps = VideoHTMLAttributes<HTMLVideoElement> & {
-  track?: FFCVideoTrack | VideoTrack;
+  track?: FFCVideoTrack;
   deviceId?: string;
 };
 
