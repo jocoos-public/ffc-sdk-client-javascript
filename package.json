@@ -61,7 +61,9 @@
   "dependencies": {
     "@livekit/mutex": "^1.1.1",
     "@livekit/protocol": "^1.30.0",
+    "@types/event-source-polyfill": "^1.0.5",
     "axios": "^1.8.1",
+    "event-source-polyfill": "^1.0.31",
     "events": "^3.3.0",
     "livekit-client": "2.9.5",
     "loglevel": "^1.9.2",

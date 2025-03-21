@@ -1,4 +1,4 @@
-import { FFCAccessLevel, FFCVideoRoomType } from "./enums";
+import { FFCAccessLevel, FFCVideoRoomType, type FFCChannelMessageType } from "./enums";
 
 /**
  * Configuration options for initializing the SDK.
@@ -86,4 +86,24 @@ export interface FFCIssueRtcVideoRoomTokenParams {
 
   /** Additional custom data included in the token request. */
   customData: any;
+}
+
+/**
+ * Parameters for joining a channel.
+ */
+export interface FFCJoinChannelDto {
+  customType?: string;
+  customData?: Record<string, any>;
+  password?: string;
+}
+
+/**
+ * Parameters for sending a channel message.
+ */
+export interface FFCSendChannelMessageDto {
+  type?: Exclude<FFCChannelMessageType, 'SIGNAL'>;
+  message?: string;
+  customType?: string;
+  customData?: Record<string, any>;
+  persistence?: boolean;
 }

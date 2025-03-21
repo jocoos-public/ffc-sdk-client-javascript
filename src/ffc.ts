@@ -18,11 +18,12 @@ export default class FlipFlopCloud {
    * @param accessToken - The access token for authenticating API requests.
    * @param refreshToken - (Optional) The refresh token for renewing the access token.
    */
-  static init(baseUrl: string, accessToken: string, refreshToken?: string): void {
+  static async init(baseUrl: string, accessToken: string, refreshToken?: string): Promise<void> {
     if (FlipFlopCloud.instance) {
       console.warn('FlipFlopCloud instance already initialized');
     }
     FlipFlopCloud.instance = new FlipFlopCloudApi(baseUrl, accessToken, refreshToken);
+    FlipFlopCloud.instance.connectToEventSource();
   }
 
   /**

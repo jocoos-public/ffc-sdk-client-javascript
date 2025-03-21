@@ -1,6 +1,11 @@
 import { FFCAccessLevel, FFCVideoRoomState, FFCVideoRoomType } from "./enums";
 
 /**
+ * Represents the direction of a query for fetching paginated results.
+ */
+export type FFCQueryDirection = 'BEFORE' | 'AFTER';
+
+/**
  * Represents a generic query object for fetching paginated results.
  */
 export interface FFCQuery {
@@ -119,4 +124,10 @@ export interface FFCListVideoRoomsQuery extends FFCQuery {
    * Sorting criteria for the query.
    */
   sortBy?: FFCVideoRoomsSortOption;
+}
+
+export interface FFCListChannelMessagesQuery {
+  messageId: number;
+  direction?: FFCQueryDirection;
+  limit?: number;
 }

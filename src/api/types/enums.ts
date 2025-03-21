@@ -58,3 +58,41 @@ export enum FFCCreatorType {
   /** The video room was created by a member. */
   MEMBER = "MEMBER",
 }
+
+/**
+ * Represents all valid message types.
+ *
+ * @remarks
+ * This union type defines all possible types of messages in the system:
+ * - 'msg': Represents a standard message.
+ * - 'sig': Represents a signature message.
+ * - 'app': Represents an application message.
+ */
+export type FFCChannelMessageType = 'MESSAGE' | 'SIGNAL';
+
+export type FFCChannelReferenceType = 'VIDEO_ROOM';
+
+export enum FFCChannelState {
+  CREATED = 'CREATED',
+  OPENED = 'OPENED',
+  PAUSED = 'PAUSED',
+  CLOSED = 'CLOSED',
+}
+
+export enum FFCChannelMemberType {
+  OPERATOR = 'OPERATOR',
+  MEMBER = 'MEMBER',
+}
+
+export enum FFCChannelMemberState {
+  ONLINE = 'ONLINE',
+  OFFLINE = 'OFFLINE',
+  BANNED = 'BANNED',
+  LEAVED = 'LEAVED',
+}
+
+export enum FFCChannelMessageOrigin {
+  MEMBER = 'MEMBER',
+  APP = 'APP',
+  SYSTEM = 'SYSTEM',
+}

@@ -1,4 +1,4 @@
-import { FFCAccessLevel, FFCCreatorType, FFCVideoRoomState, FFCVideoRoomType } from "./enums";
+import { FFCAccessLevel, FFCChannelMemberState, FFCChannelMemberType, FFCChannelMessageOrigin, FFCChannelState, FFCCreatorType, FFCVideoRoomState, FFCVideoRoomType, type FFCChannelMessageType, type FFCChannelReferenceType } from "./enums";
 
 /**
  * Generic DTO for paginated responses.
@@ -172,3 +172,79 @@ export interface FFCRtcVideoRoomTokenDto {
   /** The WebRTC token used for authentication. */
   webRtcToken: string;
 }
+
+export interface FFCChannelPolicyDto {
+  canMemberSelfJoin: boolean;
+  memberAutoLeaveWhenDisconnects: boolean;
+  canAutoResume: boolean;
+}
+
+export interface FFCChannelStatsDto {
+  currentOnlineMemberCount: number;
+}
+
+export interface FFCChannelDto {
+  id: number;
+  channelState: FFCChannelState;
+  app: FFCNestedAppDto;
+  referenceType: FFCChannelReferenceType;
+  referenceId: number;
+  lastSessionNo: number;
+  name: string;
+  description?: string;
+  customType?: string;
+  customData?: Record<string, any>;
+  policy: FFCChannelPolicyDto;
+  openedAt?: Date;
+  pausedAt?: Date;
+  autoPaused: boolean;
+  resumedAt?: Date;
+  closedAt?: Date;
+  stats: FFCChannelStatsDto;
+  createdAt: Date;
+  lastModifiedAt: Date;
+}
+
+export interface FFCChannelMemberDataDto {
+  appUserId: string;
+  appUserName: string;
+  appUserProfileImgUrl: string;
+  appUserCustomData?: Record<string, any>;
+  email?: string;
+}
+
+export interface FFCNestedChannelMemberDto {
+  type: FFCChannelMemberType;
+  appUser: FFCChannelMemberDataDto;
+  customType?: string;
+  customData?: Record<string, any>;
+}
+
+export interface FFCChannelMemberDto {
+  id: number;
+  channelMemberState: FFCChannelMemberState;
+  channelMemberType: FFCChannelMemberType;
+  appUser: FFCChannelMemberDataDto;
+  customType?: string;
+  customData?: Record<string, any>;
+  joinedAt: Date;
+  rejoinedAt?: Date;
+  lastSeenAt?: Date;
+  bannedAt?: Date;
+  unbannedAt?: Date;
+  leavedAt?: Date;
+  autoLeaved: boolean; 
+}
+
+export interface FFCChannelMessageDto {
+  messageId: string;
+  sentAt: Date;
+  origin: FFCChannelMessageOrigin;
+  type: FFCChannelMessageType;
+  channelMember: FFCNestedChannelMemberDto;
+  sessionNo: number;
+  message: string;
+  customType?: string;
+  customData?: Record<string, any>;
+}
+
